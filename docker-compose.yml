@@ -1,0 +1,28 @@
+services:
+  user-service:
+    image: user-service
+    build: user-service
+    container_name: user-service
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - user-service-db
+
+  user-service-db:
+    image: postgres:13
+    container_name: user-service-db
+    environment:
+      - POSTGRES_USER= ${USER_SERVICE_DB_USERNAME}
+      - POSTGRES_PASSWORD=${USER_SERVICE_DB_PASSWORD}
+      - POSTGRES_DB=${USER_SERVICE_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

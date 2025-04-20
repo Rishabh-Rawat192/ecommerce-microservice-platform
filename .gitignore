@@ -1,0 +1,53 @@
+# === Java & Spring Boot ===
+**/target/
+**/out/
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+
+# === Build Tools ===
+**/.gradle/
+**/.mvn/
+**/build/
+.mvn/
+.gradle/
+
+# === IntelliJ IDEA ===
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+
+# === Logs & Temp Files ===
+**/*.log
+**/logs/
+**/*.pid
+**/*.tmp
+**/*.bak
+
+# === OS Generated Files ===
+.DS_Store
+Thumbs.db
+
+# === Environment Files ===
+**/.env
+.env
+
+# === Docker ===
+**/docker-compose.override.yml
+**/*.orig
+
+# === DB & Runtime Files ===
+**/*.h2.db
+**/*.mv.db
+**/*.sqlite
+**/*.db
+
+# === Test Reports ===
+**/test-output/
+**/coverage/
+
+# === Misc ===
+**/.vscode/
+**/*.sw?
