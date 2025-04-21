@@ -2,6 +2,7 @@ package com.ecommerce.user_service.auth.service;
 
 import com.ecommerce.user_service.auth.UserRepository;
 import com.ecommerce.user_service.auth.dto.AuthRequest;
+import com.ecommerce.user_service.auth.dto.JwtUserDto;
 import com.ecommerce.user_service.auth.dto.LoginResponse;
 import com.ecommerce.user_service.auth.dto.RegisterResponse;
 import com.ecommerce.user_service.auth.entity.User;
@@ -20,6 +21,7 @@ public class AuthServiceImp implements AuthService{
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImp.class);
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public RegisterResponse register(AuthRequest request) {
@@ -48,7 +50,9 @@ public class AuthServiceImp implements AuthService{
         if (!passwordEncoder.matches(request.password(), user.getPassword()))
             throw new ApiException("Invalid credentials", HttpStatus.UNAUTHORIZED);
 
+        String token = jwtService.generateToken(new JwtUserDto(user.getId(), user.getEmail(), user.getRole()));
+
         logger.info("User logged in successfully with email: {}", user.getEmail());
-        return new LoginResponse(user.getId(), user.getEmail(), "jwt_token");
+        return new LoginResponse(user.getId(), user.getEmail(), token);
     }
 }
