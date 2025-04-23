@@ -2,6 +2,9 @@ package com.ecommerce.user_service.auth.config.filter;
 
 import com.ecommerce.user_service.auth.dto.JwtUserDto;
 import com.ecommerce.user_service.auth.service.JwtService;
+import com.ecommerce.user_service.common.dto.ApiResponse;
+import com.ecommerce.user_service.common.exception.ApiException;
+import com.ecommerce.user_service.common.util.ResponseUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,27 +34,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String authHeaderStart = "Bearer ";
-        if (authHeader == null || !authHeader.startsWith(authHeaderStart)) {
-            logger.error("Can't read auth header");
+
+        try {
+            if (authHeader == null || !authHeader.startsWith(authHeaderStart)) {
+                logger.error("Can't read auth header");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String token = authHeader.substring(authHeaderStart.length());
+
+            if (jwtService.validateToken(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
+                JwtUserDto userDto = jwtService.extractUserDto(token);
+
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userDto.email());
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                );
+
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                logger.info(authenticationToken.toString());
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
+
             filterChain.doFilter(request, response);
-            return;
+        } catch (ApiException e) {
+            ResponseUtil.writeResponse(response, ApiResponse.failure("Token not valid"), HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            ResponseUtil.writeResponse(response, ApiResponse.failure("Unauthorized request"), HttpStatus.UNAUTHORIZED);
         }
-
-        String token = authHeader.substring(authHeaderStart.length());
-
-        if (jwtService.validateToken(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
-            JwtUserDto userDto = jwtService.extractUserDto(token);
-
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userDto.email());
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities()
-            );
-
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            logger.info(authenticationToken.toString());
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        }
-
-        filterChain.doFilter(request, response);
     }
 }
