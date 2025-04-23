@@ -28,4 +28,9 @@ public class AuthController {
     ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(ApiResponse.success("User logged in successfully", authService.login(request)));
     }
+
+    @GetMapping("/protected")
+    ResponseEntity<ApiResponse<String >> protectedEndPoint() {
+        return ResponseEntity.ok(ApiResponse.success("You are protected", null));
+    }
 }
