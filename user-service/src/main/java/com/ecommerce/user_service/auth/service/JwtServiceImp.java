@@ -20,10 +20,15 @@ import java.util.UUID;
 
 @Service
 public class JwtServiceImp implements JwtService{
-    @Value("${jwt.secret}")
-    private String secret;
-    @Value("${jwt.expirationMs}")
-    private long expirationMs;
+    private final String secret;
+    private final long expirationMs;
+
+    public JwtServiceImp(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expirationMs}") long expirationMs) {
+        this.secret = secret;
+        this.expirationMs = expirationMs;
+    }
 
     @Override
     public String generateToken(JwtUserDto userDto) {
@@ -68,7 +73,7 @@ public class JwtServiceImp implements JwtService{
             Role role = Role.valueOf(claims.get("role", String.class));
 
             return new JwtUserDto(userId, email, role);
-        } catch (JwtException e) {
+        } catch (Exception e) {
             throw new ApiException("Token parsing failed.", HttpStatus.UNAUTHORIZED);
         }
     }
