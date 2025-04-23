@@ -17,7 +17,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class JwtServiceImpTest {
+class JwtServiceImpTest {
     private JwtServiceImp jwtService;
     private final String secret = "my-very-secure-and-long-jwt-secret-key-used-for-tests";
     @BeforeEach

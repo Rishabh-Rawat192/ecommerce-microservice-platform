@@ -27,7 +27,7 @@ public class AuthServiceImp implements AuthService{
     public RegisterResponse register(AuthRequest request) {
         logger.info("Registering user with email {}", request.email());
         if (userRepository.existsByEmail(request.email()))
-            throw new ApiException("User already exists", HttpStatus.BAD_REQUEST);
+            throw new ApiException("User already exists", HttpStatus.CONFLICT);
 
         User user = User.builder()
                 .email(request.email())
