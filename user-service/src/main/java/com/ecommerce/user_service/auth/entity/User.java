@@ -36,6 +36,7 @@ public class User {
     @Column(nullable = false)
     private Date updateAt;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
     private Date createdAt;
 
