@@ -6,6 +6,8 @@ import com.ecommerce.user_service.common.dto.ApiResponse;
 import com.ecommerce.user_service.common.exception.ApiException;
 import com.ecommerce.user_service.user.dto.UserProfileRegisterRequest;
 import com.ecommerce.user_service.user.dto.UserProfileRegisterResponse;
+import com.ecommerce.user_service.user.dto.UserProfileResponse;
+import com.ecommerce.user_service.user.dto.UserProfileUpdateRequest;
 import com.ecommerce.user_service.user.entity.UserProfile;
 import com.ecommerce.user_service.user.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +41,19 @@ public class UserProfileServiceImp implements UserProfileService {
         userProfileRepository.save(userProfile);
 
         return new UserProfileRegisterResponse(userProfile.getId());
+    }
+
+    @Override
+    public UserProfileResponse get(UUID uuid) {
+        UserProfile userProfile = userProfileRepository.findById(uuid)
+                .orElseThrow(() -> new ApiException("User profile not found.", HttpStatus.NOT_FOUND));
+
+        return new UserProfileResponse(userProfile.getId(), userProfile.getFullName(),
+                                       userProfile.getPhoneNumber(), userProfile.getAddress());
+    }
+
+    @Override
+    public UserProfileResponse update(UserProfileUpdateRequest request, UUID userId) {
+        return null;
     }
 }

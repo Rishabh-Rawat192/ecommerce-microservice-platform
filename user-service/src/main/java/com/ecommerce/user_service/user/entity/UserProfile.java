@@ -2,10 +2,7 @@ package com.ecommerce.user_service.user.entity;
 
 import com.ecommerce.user_service.auth.entity.User;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,6 +11,8 @@ import java.util.UUID;
 @Table(name = "user_profiles")
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Builder
 public class UserProfile {
     @Id
