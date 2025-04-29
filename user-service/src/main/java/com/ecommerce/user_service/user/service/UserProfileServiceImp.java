@@ -33,9 +33,9 @@ public class UserProfileServiceImp implements UserProfileService {
 
         UserProfile userProfile = UserProfile.builder()
                 .user(user)
-                .fullName(request.fullName())
+                .fullName(request.fullName().trim())
                 .phoneNumber(request.phoneNumber())
-                .address(request.address())
+                .address(request.address().trim())
                 .build();
 
         userProfileRepository.save(userProfile);
@@ -49,11 +49,26 @@ public class UserProfileServiceImp implements UserProfileService {
                 .orElseThrow(() -> new ApiException("User profile not found.", HttpStatus.NOT_FOUND));
 
         return new UserProfileResponse(userProfile.getId(), userProfile.getFullName(),
-                                       userProfile.getPhoneNumber(), userProfile.getAddress());
+                userProfile.getPhoneNumber(), userProfile.getAddress());
     }
 
     @Override
     public UserProfileResponse update(UserProfileUpdateRequest request, UUID userId) {
-        return null;
+        UserProfile userProfile = userProfileRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User profile not found.", HttpStatus.NOT_FOUND));
+
+        if (request.fullName() != null && !request.fullName().isBlank())
+            userProfile.setFullName(request.fullName().trim());
+
+        if (request.phoneNumber() != null)
+            userProfile.setPhoneNumber(request.phoneNumber());
+
+        if (request.address() != null && !request.address().isBlank())
+            userProfile.setAddress(request.address().trim());
+
+        userProfileRepository.save(userProfile);
+
+        return new UserProfileResponse(userProfile.getId(), userProfile.getFullName(),
+                userProfile.getPhoneNumber(), userProfile.getAddress());
     }
 }
