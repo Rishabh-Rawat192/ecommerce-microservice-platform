@@ -42,18 +42,23 @@ user-service/
 
 ### 🔸 Auth
 
-| Method | Endpoint              | Description                    |
-|--------|-----------------------|--------------------------------|
-| POST   | `/api/auth/register`  | Register as user or seller     |
-| POST   | `/api/auth/login`     | Login with credentials         |
-| GET    | `/api/auth/me`        | Get current logged-in user     |
+### 🔸 Auth
+
+| Method | Endpoint                 | Description                   |
+|--------|--------------------------|-------------------------------|
+| POST   | `/api/v1/auth/register`  | Register a new user or seller |
+| POST   | `/api/v1/auth/login`     | Login with credentials        |
+| GET    | `/api/v1/auth/protected` | Test endpoint for token       |
 
 ### 🔸 User Profile
 
-| Method | Endpoint               | Description         |
-|--------|------------------------|---------------------|
-| GET    | `/api/user/profile`    | Get user profile    |
-| PUT    | `/api/user/profile`    | Update user profile |
+### 🔸 User Profile
+
+| Method | Endpoint                     | Description                  |
+|--------|------------------------------|------------------------------|
+| POST   | `/api/v1/users`              | Register a user profile      |
+| GET    | `/api/v1/users/{userId}`     | Get user profile by ID       |
+| PATCH  | `/api/v1/users/{userId}`     | Update user profile by ID    |
 
 ### 🔸 Seller Profile
 
