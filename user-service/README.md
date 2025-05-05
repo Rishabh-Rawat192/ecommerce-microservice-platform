@@ -24,10 +24,10 @@ user-service/
 ├── src/
 │   ├── main/java/com/ecommerce/user/
 │   │   ├── auth/
-│   │   ├── userprofile/
-│   │   ├── sellerprofile/
+│   │   ├── user/
+│   │   ├── seller/
 │   │   ├── common/
-│   │   └── config/
+│   │ 
 │   └── resources/
 │       ├── application.yml
 │       └── ...

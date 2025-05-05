@@ -2,12 +2,18 @@ package com.ecommerce.user_service.seller.entity;
 
 import com.ecommerce.user_service.auth.entity.User;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "seller_profiles")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SellerProfile {
     @Id
     private UUID id;
