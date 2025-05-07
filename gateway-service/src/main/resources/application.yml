@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
@@ -8,10 +8,12 @@ spring:
     gateway:
       routes:
         - id: user-service
-          uri: http://localhost:8081
+          uri: http://localhost:8080
           predicates:
-            - Path=/api/v1/users/**
-        - id: product-service
-          uri: http://localhost:8082
-          predicates:
-            - Path=/api/products/**
+            - Path=/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: DEBUG
