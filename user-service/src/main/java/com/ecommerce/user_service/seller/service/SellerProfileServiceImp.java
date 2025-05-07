@@ -1,5 +1,6 @@
 package com.ecommerce.user_service.seller.service;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.ecommerce.user_service.auth.UserRepository;
 import com.ecommerce.user_service.auth.entity.User;
 import com.ecommerce.user_service.common.enums.Role;
@@ -14,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.UUID;
 
@@ -46,7 +48,7 @@ public class SellerProfileServiceImp implements SellerProfileService {
         sellerProfileRepository.save(sellerProfile);
         userRepository.save(user);
 
-        return new SellerProfileRegisterResponse(sellerProfile.getId());
+        return new SellerProfileRegisterResponse(user.getId());
     }
 
     @Override
@@ -64,13 +66,13 @@ public class SellerProfileServiceImp implements SellerProfileService {
         SellerProfile sellerProfile = sellerProfileRepository.findById(userId)
                 .orElseThrow(()-> new ApiException("Seller Profile not found.", HttpStatus.NOT_FOUND));
 
-        if (request.businessName() != null && !request.businessName().isBlank())
+        if (StringUtils.hasText(request.businessName()))
             sellerProfile.setBusinessName(request.businessName().trim());
-        if (request.gstNumber() != null && !request.gstNumber().isBlank())
+        if (StringUtils.hasText(request.gstNumber()))
             sellerProfile.setGstNumber(request.gstNumber().trim());
-        if (request.address() != null && !request.address().isBlank())
+        if (StringUtils.hasText(request.address()))
             sellerProfile.setAddress(request.address().trim());
-        if (request.phoneNumber() != null && !request.phoneNumber().isBlank())
+        if (StringUtils.hasText(request.phoneNumber()))
             sellerProfile.setPhoneNumber(request.phoneNumber());
 
         sellerProfileRepository.save(sellerProfile);
