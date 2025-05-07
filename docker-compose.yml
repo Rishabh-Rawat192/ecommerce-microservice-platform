@@ -1,10 +1,20 @@
 services:
+
+  gateway-service:
+    image: gateway-service
+    build: gateway-service
+    container_name: gateway-service
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./gateway-service:/workspace
+
   user-service:
     image: user-service
     build: user-service
     container_name: user-service
     volumes:
-      - ./src:/app/src
+      - ./user-service:/workspace
     ports:
       - "8080:8080"
     env_file:
