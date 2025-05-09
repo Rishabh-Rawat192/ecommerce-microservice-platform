@@ -50,6 +50,7 @@ USER_SERVICE_DB_PASSWORD=<user_service_password>
 USER_SERVICE_DATASOURCE_URL=<jdbc url>
 USER_SERVICE_JWT_SECRET=<secret>
 USER_SERVICE_JWT_EXPIRATION=<Milliseconds>
+USER_SERVICE_HOST=user-service
 ```
 ### 3. Start Dependencies (DBs, etc.)
 
