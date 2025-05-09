@@ -9,6 +9,7 @@ A backend microservice architecture for an e-commerce platform, built with Sprin
 This system consists of multiple services, each responsible for a single business domain:
 
 - **User Service**: Handles user registration, login, JWT-based authentication, and role-based authorization.
+- **Gateway Service**: Acts as an API Gateway, routing requests to appropriate services and handling cross-cutting concerns like authentication and logging.
 - **Product Service** *(TODO)*: Manages product catalogs and inventory.
 - **Order Service** *(TODO)*: Handles cart management, order placement, and tracking.
 - **Payment Service** *(optional, TODO)*: Processes payment-related logic.
@@ -20,7 +21,7 @@ All services use **PostgreSQL**, and communication is enabled through **REST API
 
 ## 📦 Tech Stack
 
-- **Language**: Java 21
+- **Language**: Java 17
 - **Framework**: Spring Boot 3.x
 - **Database**: PostgreSQL
 - **Authentication**: JWT
