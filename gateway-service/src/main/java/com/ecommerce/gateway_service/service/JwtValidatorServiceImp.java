@@ -25,12 +25,6 @@ public class JwtValidatorServiceImp implements JwtValidatorService{
     }
 
     @Override
-    public boolean validateToken(String token) {
-        getPayload(token);
-        return true;
-    }
-
-    @Override
     public JwtUserDto extractUserDto(String token) {
         Claims claims = getPayload(token);
         UUID uuid = UUID.fromString(claims.getSubject());
