@@ -20,7 +20,7 @@ WORKDIR /app
 COPY --from=build /app/target/gateway-service-0.0.1-SNAPSHOT.jar /app/gateway-service.jar
 
 # Expose the application port
-EXPOSE 8080
+EXPOSE 8081
 
 # Command to run the jar file
 ENTRYPOINT ["java", "-jar", "/app/gateway-service.jar"]
