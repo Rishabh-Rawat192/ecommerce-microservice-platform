@@ -1,5 +1,6 @@
 server:
   port: 8081
+  max-http-header-size: 16384
 
 spring:
   application:
@@ -15,12 +16,12 @@ spring:
           uri: http://${USER_SERVICE_HOST:localhost}:8080
           predicates:
             - Path=/api/v1/sellers/**
-        - id: seller-service
+        - id: user-service
           uri: http://${USER_SERVICE_HOST:localhost}:8080
           predicates:
             - Path=/api/v1/users/**
         - id: product-service
-          uri: http://${PRODUCTS_SERVICE_HOST:localhost}:8081
+          uri: http://${PRODUCTS_SERVICE_HOST:localhost}:8082
           predicates:
             - Path=/api/v1/products/**
 

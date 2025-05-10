@@ -51,6 +51,11 @@ USER_SERVICE_DATASOURCE_URL=<jdbc url>
 USER_SERVICE_JWT_SECRET=<secret>
 USER_SERVICE_JWT_EXPIRATION=<Milliseconds>
 USER_SERVICE_HOST=user-service
+
+PRODUCT_SERVICE_DB=<product_service_db>
+PRODUCT_SERVICE_DB_USERNAME=<product_service_user>
+PRODUCT_SERVICE_DB_PASSWORD=<product_service_password>
+PRODUCT_SERVICE_DATASOURCE_URL=<jdbc url>
 PRODUCT_SERVICE_HOST=product-service
 ```
 ### 3. Start Dependencies (DBs, etc.)

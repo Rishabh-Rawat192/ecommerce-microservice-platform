@@ -36,5 +36,18 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  product-service-db:
+    image: postgres:13
+    container_name: product-service-db
+    environment:
+      - POSTGRES_USER=${PRODUCT_SERVICE_DB_USERNAME}
+      - POSTGRES_PASSWORD=${PRODUCT_SERVICE_DB_PASSWORD}
+      - POSTGRES_DB=${PRODUCT_SERVICE_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data-product:/var/lib/postgresql/data
+
 volumes:
   postgres-data:
+  postgres-data-product:

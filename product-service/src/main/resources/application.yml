@@ -4,3 +4,15 @@ server:
 spring:
   application:
     name: product-service
+    
+  datasource:
+    url: ${PRODUCT_SERVICE_DATASOURCE_URL:jdbc:postgresql://localhost:5433/product_service_db}
+    username: ${PRODUCT_SERVICE_DB_USERNAME:product_service_user}
+    password: ${PRODUCT_SERVICE_DB_PASSWORD:product_service_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # change to validate or none in production
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
