@@ -8,6 +8,7 @@ import com.ecommerce.user_service.seller.dto.SellerProfileRegisterResponse;
 import com.ecommerce.user_service.seller.dto.SellerProfileResponse;
 import com.ecommerce.user_service.seller.dto.SellerProfileUpdateRequest;
 import com.ecommerce.user_service.seller.entity.SellerProfile;
+import com.ecommerce.user_service.seller.service.KafkaProducerService;
 import com.ecommerce.user_service.seller.service.SellerProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SellerController {
     private final SellerProfileService sellerProfileService;
+    private final KafkaProducerService kafkaProducerService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<SellerProfileRegisterResponse>>
@@ -55,5 +57,16 @@ public class SellerController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Seller Profile Updated Successfully.",
                         response));
+    }
+
+    @GetMapping("/test/kafka")
+    public ResponseEntity<ApiResponse<String>> kafkaTestSend() {
+        // Example UUID and status
+        UUID sellerId = UUID.randomUUID();
+        boolean isActive = true;
+        // Send the message to Kafka
+        kafkaProducerService.sendSellerStatusUpdate("seller-status-topic", sellerId, isActive);
+
+        return ResponseEntity.ok(ApiResponse.success("Testing kafka send", null));
     }
 }
