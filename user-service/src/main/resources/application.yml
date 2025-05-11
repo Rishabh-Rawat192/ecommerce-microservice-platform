@@ -30,11 +30,16 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.UUIDSerializer  # Serializer for the key (UUID)
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+kafka:
+  topic:
+    sellerStatusUpdated: seller-status-updated
+
 logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
     com.ecommerce.userservice: DEBUG
+    org.springframework.boot.context.config: DEBUG
 
 jwt:
   secret: ${USER_SERVICE_JWT_SECRET:my-super-secret-key-1234567890123456}

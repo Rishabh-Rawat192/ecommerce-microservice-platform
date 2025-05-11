@@ -65,7 +65,7 @@ public class SellerController {
         UUID sellerId = UUID.randomUUID();
         boolean isActive = true;
         // Send the message to Kafka
-        kafkaProducerService.sendSellerStatusUpdate("seller-status-topic", sellerId, isActive);
+        kafkaProducerService.sendSellerStatusUpdate(sellerId, isActive);
 
         return ResponseEntity.ok(ApiResponse.success("Testing kafka send", null));
     }

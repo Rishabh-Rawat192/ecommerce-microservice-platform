@@ -1,5 +1,6 @@
 package com.ecommerce.user_service.seller.service;
 
+import com.ecommerce.user_service.seller.config.KafkaTopicProperties;
 import com.ecommerce.user_service.seller.dto.SellerStatusMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,11 +16,13 @@ import java.util.concurrent.CompletableFuture;
 public class KafkaProducerServiceImp implements KafkaProducerService{
 
     private final KafkaTemplate<UUID, SellerStatusMessage> kafkaTemplate;
+    private final KafkaTopicProperties kafkaTopicProperties;
 
     @Override
-    public void sendSellerStatusUpdate(String topic, UUID sellerId, boolean isActive) {
+    public void sendSellerStatusUpdate(UUID sellerId, boolean isActive) {
         SellerStatusMessage message = new SellerStatusMessage(isActive);
-        CompletableFuture <SendResult<UUID, SellerStatusMessage>> completableFuture = kafkaTemplate.send(topic, sellerId, message);
+        CompletableFuture <SendResult<UUID, SellerStatusMessage>> completableFuture =
+                kafkaTemplate.send(kafkaTopicProperties.getSellerStatusUpdated(), sellerId, message);
 
         completableFuture.whenComplete((result, ex) ->{
             if (ex != null) {
