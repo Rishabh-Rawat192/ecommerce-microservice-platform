@@ -48,7 +48,7 @@ public class JwtValidationFilter implements GlobalFilter {
             ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                     .header("X-USER-ID", userDto.userId().toString())
                     .header("X-USER-EMAIL", userDto.email())
-                    .header("X-ROLE", userDto.role().name())
+                    .header("X-USER-ROLE", userDto.role().name())
                     .build();
 
             ServerWebExchange mutatedExchange = exchange.mutate()
