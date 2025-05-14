@@ -7,8 +7,7 @@ import com.ecommerce.user_service.seller.dto.SellerProfileRegisterRequest;
 import com.ecommerce.user_service.seller.dto.SellerProfileRegisterResponse;
 import com.ecommerce.user_service.seller.dto.SellerProfileResponse;
 import com.ecommerce.user_service.seller.dto.SellerProfileUpdateRequest;
-import com.ecommerce.user_service.seller.entity.SellerProfile;
-import com.ecommerce.user_service.seller.service.KafkaProducerService;
+import com.ecommerce.user_service.seller.service.SellerStatusProducerService;
 import com.ecommerce.user_service.seller.service.SellerProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SellerController {
     private final SellerProfileService sellerProfileService;
-    private final KafkaProducerService kafkaProducerService;
+    private final SellerStatusProducerService kafkaProducerService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<SellerProfileRegisterResponse>>
