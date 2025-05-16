@@ -13,8 +13,12 @@ import com.ecommerce.user_service.seller.entity.SellerProfile;
 import com.ecommerce.user_service.seller.repository.SellerProfileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 
 import java.util.UUID;
@@ -25,6 +29,8 @@ public class SellerProfileServiceImp implements SellerProfileService {
     private final SellerProfileRepository sellerProfileRepository;
     private final UserRepository userRepository;
     private final SellerStatusProducerService sellerStatusProducerService;
+
+    private static final Logger logger = LoggerFactory.getLogger(SellerProfileServiceImp.class);
 
     @Override
     @Transactional
@@ -49,7 +55,16 @@ public class SellerProfileServiceImp implements SellerProfileService {
         sellerProfileRepository.save(sellerProfile);
         userRepository.save(user);
 
-        sellerStatusProducerService.sendSellerStatusUpdate(user.getId(), true);
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        logger.info("Transaction committed successfully. Sending seller status update.");
+                        sellerStatusProducerService.sendSellerStatusUpdate(user.getId(), true);
+                    }
+                }
+        );
+
         return new SellerProfileRegisterResponse(user.getId());
     }
 

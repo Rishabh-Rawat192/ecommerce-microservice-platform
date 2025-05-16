@@ -61,6 +61,7 @@ public class AuthHeaderFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
 
+            logger.info("Auth headers parsed successfully. User ID: {}, Email: {}, Role: {}", userId, email, role);
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             logger.error("Error while parsing auth headers: {}", e.getMessage());
