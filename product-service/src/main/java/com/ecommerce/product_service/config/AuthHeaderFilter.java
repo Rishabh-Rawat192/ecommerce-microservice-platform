@@ -5,11 +5,13 @@ import com.ecommerce.product_service.enums.Role;
 import com.ecommerce.product_service.service.ActiveSellerService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,13 +40,13 @@ public class AuthHeaderFilter extends OncePerRequestFilter {
 
             if (userId == null || email == null || role == null) {
                 logger.error("Cant read auth headers.");
-                filterChain.doFilter(request, response);
+                sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Unauthorized");
                 return;
             }
 
             if (!activeSellerService.isActive(UUID.fromString(userId))) {
                 logger.error("Not a active seller.");
-                filterChain.doFilter(request, response);
+                sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Unauthorized");
                 return;
             }
 
@@ -62,7 +64,13 @@ public class AuthHeaderFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             logger.error("Error while parsing auth headers: {}", e.getMessage());
-            filterChain.doFilter(request, response);
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"" + message + "\"}");
     }
 }
