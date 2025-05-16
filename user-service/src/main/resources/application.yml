@@ -25,7 +25,7 @@ spring:
     active: dev
 
   kafka:
-    bootstrap-servers: ${KAFKA_BROKER_ADDRESS:localhost:9092} # Kafka broker address
+    bootstrap-servers: kafka:9092 # Kafka broker address
     producer:
       key-serializer: org.apache.kafka.common.serialization.UUIDSerializer  # Serializer for the key (UUID)
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
