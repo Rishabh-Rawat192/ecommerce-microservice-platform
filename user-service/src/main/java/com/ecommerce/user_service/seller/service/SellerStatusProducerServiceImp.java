@@ -5,6 +5,8 @@ import com.ecommerce.user_service.seller.dto.SellerStatusMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
@@ -21,9 +23,14 @@ public class SellerStatusProducerServiceImp implements SellerStatusProducerServi
 
     private final ObjectMapper objectMapper;
 
+    private static final Logger logger = LogManager.getLogger(SellerStatusProducerServiceImp.class);
+
     @Override
     public void sendSellerStatusUpdate(UUID sellerId, boolean isActive) {
         SellerStatusMessage message = new SellerStatusMessage(isActive);
+
+        logger.info("Sending message to Kafka topic {}: key = {}, value = {}",
+                kafkaTopicProperties.getSellerStatusUpdated(), sellerId, message);
 
         try {
             String jsonMessage = objectMapper.writeValueAsString(message);
@@ -34,10 +41,11 @@ public class SellerStatusProducerServiceImp implements SellerStatusProducerServi
             completableFuture.whenComplete((result, ex) ->{
                 if (ex != null) {
                     // Handle the error
-                    System.err.println("Error sending message: " + ex.getMessage());
+                    logger.error("Error sending message to Kafka: {}", ex.getMessage());
                 } else {
                     // Handle the success
-                    System.out.println("Message sent successfully: " + result.getProducerRecord().key() +","+ result.getProducerRecord().value());
+                    logger.info("Message sent to Kafka topic {}: key = {}, value = {}",
+                            kafkaTopicProperties.getSellerStatusUpdated(), result.getProducerRecord().key(), result.getProducerRecord().value());
                 }
             });
         } catch (JsonProcessingException e) {

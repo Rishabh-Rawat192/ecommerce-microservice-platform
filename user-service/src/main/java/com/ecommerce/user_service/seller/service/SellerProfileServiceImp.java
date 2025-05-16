@@ -24,6 +24,7 @@ import java.util.UUID;
 public class SellerProfileServiceImp implements SellerProfileService {
     private final SellerProfileRepository sellerProfileRepository;
     private final UserRepository userRepository;
+    private final SellerStatusProducerService sellerStatusProducerService;
 
     @Override
     @Transactional
@@ -48,6 +49,7 @@ public class SellerProfileServiceImp implements SellerProfileService {
         sellerProfileRepository.save(sellerProfile);
         userRepository.save(user);
 
+        sellerStatusProducerService.sendSellerStatusUpdate(user.getId(), true);
         return new SellerProfileRegisterResponse(user.getId());
     }
 

@@ -4,6 +4,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -18,8 +20,10 @@ public class KafkaTopicProperties {
     @NotEmpty(message = "The sellerStatusUpdate topic name must not be empty.")
     private String sellerStatusUpdated;
 
+    private static final Logger logger = LogManager.getLogger(KafkaTopicProperties.class);
+
     @PostConstruct
     public void logProperties() {
-        System.out.println("Seller Status Update Topic: " + sellerStatusUpdated);
+        logger.info("Seller Status Update Topic: {}", sellerStatusUpdated);
     }
 }

@@ -27,6 +27,7 @@ public class SellerProfileServiceImpTest {
     private SellerProfileRepository sellerProfileRepository;
     private UserRepository userRepository;
     private SellerProfileServiceImp sellerProfileService;
+    private SellerStatusProducerService sellerStatusProducerService;
 
     private final UUID userId = UUID.randomUUID();
 
@@ -34,7 +35,8 @@ public class SellerProfileServiceImpTest {
     void setUp() {
         sellerProfileRepository = mock(SellerProfileRepository.class);
         userRepository = mock(UserRepository.class);
-        sellerProfileService = new SellerProfileServiceImp(sellerProfileRepository, userRepository);
+        sellerStatusProducerService = mock(SellerStatusProducerService.class);
+        sellerProfileService = new SellerProfileServiceImp(sellerProfileRepository, userRepository, sellerStatusProducerService);
     }
 
     @Test
