@@ -32,7 +32,7 @@ spring:
 
 kafka:
   topic:
-    sellerStatusUpdated: seller-status-updated
+    sellerStatusUpdated: user.seller.status-updated
 
 logging:
   level:

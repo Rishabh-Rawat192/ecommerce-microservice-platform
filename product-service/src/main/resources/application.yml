@@ -27,4 +27,4 @@ spring:
           spring.deserializer.value.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
 kafka:
   topic:
-    sellerStatusUpdated: seller-status-updated
+    sellerStatusUpdated: user.seller.status-updated
