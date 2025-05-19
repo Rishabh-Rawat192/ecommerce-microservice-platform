@@ -63,6 +63,31 @@ services:
     volumes:
       - postgres-data-product:/var/lib/postgresql/data
 
+  catalog-service:
+    image: catalog-service
+    build: catalog-service
+    container_name: catalog-service
+    volumes:
+      - ./catalog-service:/workspace
+    ports:
+      - "8083:8083"
+    env_file:
+      - .env
+    depends_on:
+      - catalog-service-db
+
+  catalog-service-db:
+    image:  postgres:13
+    container_name: catalog-service-db
+    environment:
+      - POSTGRES_USER=${CATALOG_SERVICE_DB_USERNAME}
+      - POSTGRES_PASSWORD=${CATALOG_SERVICE_DB_PASSWORD}
+      - POSTGRES_DB=${CATALOG_SERVICE_DB}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-data-catalog:/var/lib/postgresql/data
+
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
@@ -85,4 +110,5 @@ services:
 volumes:
   postgres-data:
   postgres-data-product:
+  postgres-data-catalog:
   kafka_data:

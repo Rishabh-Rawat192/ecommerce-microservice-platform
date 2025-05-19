@@ -62,6 +62,12 @@ PRODUCT_SERVICE_DB_USERNAME=<product_service_user>
 PRODUCT_SERVICE_DB_PASSWORD=<product_service_password>
 PRODUCT_SERVICE_DATASOURCE_URL=<jdbc url>
 PRODUCT_SERVICE_HOST=product-service
+
+CATALOG_SERVICE_DB=<catalog_service_db>
+CATALOG_SERVICE_DB_USERNAME=<catalog_service_user>
+CATALOG_SERVICE_DB_PASSWORD=<catalog_service_password>
+CATALOG_SERVICE_DATASOURCE_URL=<jdbc url>
+CATALOG_SERVICE_HOST=catalog-service
 ```
 ### 3. Start Dependencies (DBs, etc.)
 
