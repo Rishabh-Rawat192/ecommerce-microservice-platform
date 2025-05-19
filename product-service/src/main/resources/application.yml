@@ -25,6 +25,12 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
           spring.deserializer.value.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.UUIDSerializer  # Serializer for the key (UUID)
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
 kafka:
   topic:
     sellerStatusUpdated: user.seller.status-updated
+    productCreated: product.product.created

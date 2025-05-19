@@ -1,5 +1,6 @@
 package com.ecommerce.product_service.service;
 
+import com.ecommerce.product_service.dto.ProductCreatedEvent;
 import com.ecommerce.product_service.dto.ProductRegisterRequest;
 import com.ecommerce.product_service.dto.ProductResponse;
 import com.ecommerce.product_service.dto.ProductUpdateRequest;
@@ -9,6 +10,7 @@ import com.ecommerce.product_service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.UUID;
 public class ProductServiceImp implements ProductService{
 
     private final ProductRepository productRepository;
+    private final ProductProducerService productProducerService;
 
     @Override
     public ProductResponse register(ProductRegisterRequest request, UUID sellerId) {
@@ -34,6 +37,10 @@ public class ProductServiceImp implements ProductService{
                 .build();
 
         productRepository.save(product);
+
+        ProductCreatedEvent createdEvent = ProductCreatedEvent.from(product);
+
+        productProducerService.sendProductCreationEvent(product.getId(), createdEvent);
 
         return ProductResponse.from(product);
     }
