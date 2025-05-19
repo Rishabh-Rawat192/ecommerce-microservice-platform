@@ -20,6 +20,12 @@ public class KafkaTopicProperties {
     @NotEmpty(message = "The productCreated topic name must not be empty.")
     private String productCreated;
 
+    @NotEmpty(message = "The productUpdated topic name must not be empty.")
+    private String productUpdated;
+
+    @NotEmpty(message = "The productDeleted topic name must not be empty.")
+    private String productDeleted;
+
     private final static Logger logger = LogManager.getLogger(KafkaTopicProperties.class);
 
     @PostUpdate

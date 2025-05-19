@@ -34,3 +34,5 @@ kafka:
   topic:
     sellerStatusUpdated: user.seller.status-updated
     productCreated: product.product.created
+    productUpdated: product.product.updated
+    productDeleted: product.product.deleted

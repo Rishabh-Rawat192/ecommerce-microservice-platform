@@ -1,9 +1,6 @@
 package com.ecommerce.product_service.service;
 
-import com.ecommerce.product_service.dto.ProductCreatedEvent;
-import com.ecommerce.product_service.dto.ProductRegisterRequest;
-import com.ecommerce.product_service.dto.ProductResponse;
-import com.ecommerce.product_service.dto.ProductUpdateRequest;
+import com.ecommerce.product_service.dto.*;
 import com.ecommerce.product_service.entity.Product;
 import com.ecommerce.product_service.exception.ApiException;
 import com.ecommerce.product_service.repository.ProductRepository;
@@ -39,7 +36,6 @@ public class ProductServiceImp implements ProductService{
         productRepository.save(product);
 
         ProductCreatedEvent createdEvent = ProductCreatedEvent.from(product);
-
         productProducerService.sendProductCreationEvent(product.getId(), createdEvent);
 
         return ProductResponse.from(product);
@@ -75,6 +71,10 @@ public class ProductServiceImp implements ProductService{
             product.setImageUrl(request.imageUrl().trim());
 
         productRepository.save(product);
+
+        ProductUpdatedEvent updatedEvent = ProductUpdatedEvent.from(product);
+        productProducerService.sendProductUpdateEvent(product.getId(), updatedEvent);
+
         return ProductResponse.from(product);
     }
 
@@ -85,6 +85,9 @@ public class ProductServiceImp implements ProductService{
 
         if (!product.getSellerId().equals(sellerId))
             throw new ApiException("You are not authorized to delete this product.", HttpStatus.UNAUTHORIZED);
+
+        ProductDeletedEvent deletedEvent = ProductDeletedEvent.from(product);
+        productProducerService.sendProductDeletionEvent(product.getId(), deletedEvent);
 
         productRepository.delete(product);
     }
