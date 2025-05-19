@@ -10,12 +10,17 @@ This system consists of multiple services, each responsible for a single busines
 
 - **User Service**: Handles user registration, login, JWT-based authentication, and role-based authorization.
 - **Gateway Service**: Acts as an API Gateway, routing requests to appropriate services and handling cross-cutting concerns like authentication and logging.
-- **Product Service** *(TODO)*: Manages product catalogs and inventory.
-- **Order Service** *(TODO)*: Handles cart management, order placement, and tracking.
-- **Payment Service** *(optional, TODO)*: Processes payment-related logic.
-- **Notification Service** *(optional, TODO)*: Sends emails or in-app notifications.
+- **Product Service**: Manages products for Seller endpoints, including CRUD operations and product management. Sends asynchronous events for catalog updates.
 
-All services use **PostgreSQL**, and communication is enabled through **REST APIs** (later can support Kafka or RabbitMQ).
+- **Catalog Service** *(TODO)*: Manages product catalog for user-facing queries, including product search, filtering, and sorting. This is a **read-heavy** service and consumes product events.
+- **Inventory Service** *(TODO)*: Manages inventory levels, stock updates, and product availability. Supports stock reservation and consistency with order placement. This is a **write-heavy** service.
+- **Cart Service** *(TODO)*: Manages shopping cart operations, including adding/removing/updating items and calculating totals. Maintains a cart per user session.
+- **Order Service** *(TODO)*: Handles order placement, validation, order history, and order status updates. Coordinates with inventory and (optionally) payment services for atomic order creation.
+
+- **Payment Service** *(optional, TODO)*: Processes payment-related logic, integrates with external payment gateways, and handles confirmations and refunds.
+- **Notification Service** *(optional, TODO)*: Sends emails or in-app notifications based on events like order confirmation or cart abandonment.
+
+All services use **PostgreSQL**, and communication is enabled through **Kafka**.
 
 ---
 
@@ -68,6 +73,5 @@ This command will start PostgreSQL and any shared services needed across microse
 
 
 ### 📄 Notes
-Only the User Service is implemented. Other services are marked as TODO for future development.
-Public endpoints (e.g., /login, /register) do not require authentication.
+Public endpoints (e.g., /api/v1/login, /api/v1/register) do not require authentication.
 Protected endpoints require a valid JWT token in the Authorization header.
