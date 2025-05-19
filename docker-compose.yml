@@ -75,6 +75,7 @@ services:
       - .env
     depends_on:
       - catalog-service-db
+      - kafka
 
   catalog-service-db:
     image:  postgres:13

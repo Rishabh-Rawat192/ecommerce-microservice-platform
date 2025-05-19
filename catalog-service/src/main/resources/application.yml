@@ -13,6 +13,19 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: catalog-service-group
+      key-deserializer: org.apache.kafka.common.serialization.UUIDDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+kafka:
+  topic:
+    productCreated: product.product.created
+    productUpdated: product.product.updated
+    productDeleted: product.product.deleted
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
