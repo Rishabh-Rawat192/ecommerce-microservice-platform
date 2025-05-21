@@ -24,13 +24,13 @@ import java.nio.charset.StandardCharsets;
 public class JwtValidationFilter implements GlobalFilter {
     private final JwtValidatorService jwtValidatorService;
 
-    private final Logger logger = LogManager.getLogger(JwtValidatorService.class);
+    private final Logger logger = LogManager.getLogger(JwtValidationFilter.class);
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
 
-        if (path.startsWith("/api/v1/auth"))
+        if (path.startsWith("/api/v1/auth") || path.startsWith("/api/v1/catalog"))
             return chain.filter(exchange);
 
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);

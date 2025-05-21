@@ -24,6 +24,10 @@ spring:
           uri: http://${PRODUCT_SERVICE_HOST:localhost}:8082
           predicates:
             - Path=/api/v1/products/**
+        - id: catalog-service
+          uri: http://${CATALOG_SERVICE_HOST:localhost}:8083
+          predicates:
+            - Path=/api/v1/catalog/**
 
 jwt:
   secret: ${USER_SERVICE_JWT_SECRET:my-super-secret-key-1234567890123456}
