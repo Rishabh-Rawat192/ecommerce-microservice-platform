@@ -21,6 +21,7 @@ public class ProductSyncServiceImp implements ProductSyncService {
 
         CatalogProduct product = CatalogProduct.builder()
                 .id(event.productId())
+                .sellerId(event.sellerId())
                 .name(event.name())
                 .description(event.description())
                 .price(event.price())
