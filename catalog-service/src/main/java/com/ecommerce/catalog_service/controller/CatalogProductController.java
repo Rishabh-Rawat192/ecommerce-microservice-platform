@@ -1,5 +1,6 @@
 package com.ecommerce.catalog_service.controller;
 
+import com.ecommerce.catalog_service.dto.ApiResponse;
 import com.ecommerce.catalog_service.dto.PagedResponse;
 import com.ecommerce.catalog_service.dto.ProductFilterRequest;
 import com.ecommerce.catalog_service.dto.ProductResponse;
@@ -7,6 +8,7 @@ import com.ecommerce.catalog_service.service.CatalogProductService;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.shaded.com.google.protobuf.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Page;
@@ -27,14 +29,16 @@ public class CatalogProductController {
     private final CatalogProductService catalogProductService;
 
     @GetMapping
-    public ResponseEntity<PagedResponse<ProductResponse>> getProducts(@ModelAttribute @Valid ProductFilterRequest request) {
+    public ResponseEntity<ApiResponse<PagedResponse<ProductResponse>>> getProducts(@ModelAttribute @Valid ProductFilterRequest request) {
         logger.info("Received request to get products with filter: {}", request);
-        return ResponseEntity.ok(catalogProductService.getProducts(request));
+        PagedResponse<ProductResponse> response = catalogProductService.getProducts(request);
+        return ResponseEntity.ok(ApiResponse.success("Successfully found products.", response));
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponse> getProduct(@PathVariable UUID productId) {
+    public ResponseEntity<ApiResponse<ProductResponse>> getProduct(@PathVariable UUID productId) {
         logger.info("Received request to get product with id: {}", productId);
-        return ResponseEntity.ok(catalogProductService.getById(productId));
+        ProductResponse response = catalogProductService.getById(productId);
+        return ResponseEntity.ok(ApiResponse.success("Successfully found the product.", response));
     }
 }
