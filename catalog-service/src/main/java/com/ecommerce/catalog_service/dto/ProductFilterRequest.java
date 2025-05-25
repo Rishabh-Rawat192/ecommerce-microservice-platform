@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record ProductFilterRequest(
         String name,
+        String description,
         String category,
         String brand,
         UUID sellerId,
