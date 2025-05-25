@@ -1,5 +1,6 @@
 package com.ecommerce.catalog_service.controller;
 
+import com.ecommerce.catalog_service.dto.PagedResponse;
 import com.ecommerce.catalog_service.dto.ProductFilterRequest;
 import com.ecommerce.catalog_service.dto.ProductResponse;
 import com.ecommerce.catalog_service.service.CatalogProductService;
@@ -26,7 +27,7 @@ public class CatalogProductController {
     private final CatalogProductService catalogProductService;
 
     @GetMapping
-    public ResponseEntity<Page<ProductResponse>> getProducts(@ModelAttribute @Valid ProductFilterRequest request) {
+    public ResponseEntity<PagedResponse<ProductResponse>> getProducts(@ModelAttribute @Valid ProductFilterRequest request) {
         logger.info("Received request to get products with filter: {}", request);
         return ResponseEntity.ok(catalogProductService.getProducts(request));
     }

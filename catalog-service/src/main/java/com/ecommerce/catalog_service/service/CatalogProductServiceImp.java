@@ -1,5 +1,6 @@
 package com.ecommerce.catalog_service.service;
 
+import com.ecommerce.catalog_service.dto.PagedResponse;
 import com.ecommerce.catalog_service.dto.ProductFilterRequest;
 import com.ecommerce.catalog_service.dto.ProductResponse;
 
@@ -33,7 +34,7 @@ public class CatalogProductServiceImp implements CatalogProductService {
     private final CatalogProductRepository catalogProductRepository;
 
     @Override
-    public Page<ProductResponse> getProducts(ProductFilterRequest request) {
+    public PagedResponse<ProductResponse> getProducts(ProductFilterRequest request) {
         Specification<CatalogProduct> specification = Specification.where(CatalogProductSpecifications.hasSellerId(request.sellerId()))
                 .and(CatalogProductSpecifications.hasName(request.name()))
                 .and(CatalogProductSpecifications.hasCategory(request.category()))
@@ -60,7 +61,7 @@ public class CatalogProductServiceImp implements CatalogProductService {
 
         logger.info("Fetched {} products from the database", productPage.getTotalElements());
 
-        return productPage.map(ProductResponse::from);
+        return PagedResponse.from(productPage.map(ProductResponse::from));
     }
 
     @Override
