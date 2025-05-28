@@ -19,3 +19,13 @@ spring:
       hibernate:
         format_sql: true
 
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: inventory-service-group
+      key-deserializer: org.apache.kafka.common.serialization.UUIDDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+kafka:
+  topic:
+    productCreated: product.product.created

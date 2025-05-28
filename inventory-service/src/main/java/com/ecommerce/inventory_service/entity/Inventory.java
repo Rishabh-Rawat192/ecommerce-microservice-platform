@@ -1,8 +1,7 @@
 package com.ecommerce.inventory_service.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.NonNull;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,6 +13,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "inventory")
 @EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Inventory {
     @Id
