@@ -89,6 +89,19 @@ services:
     volumes:
       - postgres-data-catalog:/var/lib/postgresql/data
 
+  inventory-service:
+    image: inventory-service
+    build: inventory-service
+    container_name: inventory-service
+    volumes:
+      - ./inventory-service:/workspace
+    ports:
+      - "8084:8084"
+    env_file:
+      - .env
+    depends_on:
+      - inventory-service-db
+      - kafka
 
   inventory-service-db:
     image: postgres:13
