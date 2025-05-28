@@ -1,0 +1,21 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: inventory-service
+
+  datasource:
+    url: ${INVENTORY_SERVICE_DATASOURCE_URL:jdbc:postgresql://localhost:5435/inventory_service_db}
+    username: ${INVENTORY_SERVICE_DB_USERNAME:inventory_service_user}
+    password: ${INVENTORY_SERVICE_DB_PASSWORD:inventory_service_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
