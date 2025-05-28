@@ -68,6 +68,12 @@ CATALOG_SERVICE_DB_USERNAME=<catalog_service_user>
 CATALOG_SERVICE_DB_PASSWORD=<catalog_service_password>
 CATALOG_SERVICE_DATASOURCE_URL=<jdbc url>
 CATALOG_SERVICE_HOST=catalog-service
+
+INVENTORY_SERVICE_DB=<inventory_service_db>
+INVENTORY_SERVICE_DB_USERNAME=<inventory_service_user>
+INVENTORY_SERVICE_DB_PASSWORD=<inventory_service_password>
+INVENTORY_SERVICE_DATASOURCE_URL=<jdbc url>
+INVENTORY_SERVICE_HOST=inventory-service
 ```
 ### 3. Start Dependencies (DBs, etc.)
 

@@ -89,6 +89,19 @@ services:
     volumes:
       - postgres-data-catalog:/var/lib/postgresql/data
 
+
+  inventory-service-db:
+    image: postgres:13
+    container_name: inventory-service-db
+    environment:
+      - POSTGRES_USER=${INVENTORY_SERVICE_DB_USERNAME}
+      - POSTGRES_PASSWORD=${INVENTORY_SERVICE_DB_PASSWORD}
+      - POSTGRES_DB=${INVENTORY_SERVICE_DB}
+    ports:
+        - "5435:5432"
+    volumes:
+      - postgres-data-inventory:/var/lib/postgresql/data
+
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
@@ -112,4 +125,5 @@ volumes:
   postgres-data:
   postgres-data-product:
   postgres-data-catalog:
+  postgres-data-inventory:
   kafka_data:
