@@ -28,6 +28,10 @@ spring:
           uri: http://${CATALOG_SERVICE_HOST:localhost}:8083
           predicates:
             - Path=/api/v1/catalog/**
+        - id: inventory-service
+          uri: http://${INVENTORY_SERVICE_HOST:localhost}:8084
+          predicates:
+            - Path=/api/v1/inventory/**
 
 jwt:
   secret: ${USER_SERVICE_JWT_SECRET:my-super-secret-key-1234567890123456}
