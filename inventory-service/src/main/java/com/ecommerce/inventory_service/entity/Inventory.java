@@ -13,6 +13,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "inventory")
 @EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
