@@ -26,6 +26,8 @@ kafka:
     productUpdated: product.product.updated
     productDeleted: product.product.deleted
 
+    stockStatusUpdated: inventory.stock.status-updated
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
