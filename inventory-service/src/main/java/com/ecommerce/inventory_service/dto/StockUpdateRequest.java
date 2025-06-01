@@ -8,7 +8,5 @@ import java.util.UUID;
 public record StockUpdateRequest(
         @NotNull(message = "Stock is required")
         @Positive
-        Integer stock,
-        @NotNull(message = "IdempotencyKey is required")
-        UUID idempotencyKey
+        Integer stock
 ) { }
