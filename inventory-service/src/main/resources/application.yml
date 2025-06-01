@@ -21,6 +21,11 @@ spring:
 
   kafka:
     bootstrap-servers: kafka:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.UUIDSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
     consumer:
       group-id: inventory-service-group
       key-deserializer: org.apache.kafka.common.serialization.UUIDDeserializer
@@ -29,3 +34,4 @@ spring:
 kafka:
   topic:
     productCreated: product.product.created
+    stockStatusUpdated: inventory.stock.status-updated

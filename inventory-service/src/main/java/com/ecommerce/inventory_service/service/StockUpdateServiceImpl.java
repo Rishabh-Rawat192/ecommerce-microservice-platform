@@ -1,5 +1,6 @@
 package com.ecommerce.inventory_service.service;
 
+import com.ecommerce.inventory_service.dto.StockStatusUpdatedEvent;
 import com.ecommerce.inventory_service.dto.StockUpdateRequest;
 import com.ecommerce.inventory_service.dto.StockUpdateResponse;
 import com.ecommerce.inventory_service.entity.Inventory;
@@ -21,13 +22,19 @@ public class StockUpdateServiceImpl implements StockUpdateService {
     private static final Logger logger = LogManager.getLogger(StockUpdateServiceImpl.class);
 
     private final InventoryRepository inventoryRepository;
+    private final InventoryProducerService inventoryProducerService;
 
     @Override
     public StockUpdateResponse restock(StockUpdateRequest request, UUID productId, UUID sellerId) {
         Inventory inventory = getAuthorizedInventory(productId, sellerId);
 
+        boolean wasOutOfStock = inventory.getTotalQuantity() == 0;
+
         inventory.setTotalQuantity(inventory.getTotalQuantity() + request.stock());
         inventoryRepository.save(inventory);
+
+        if (wasOutOfStock)
+            inventoryProducerService.sendStockStatusUpdatedEvent(new StockStatusUpdatedEvent(productId, true));
 
         logger.info("Restocked productId={} by sellerId={} with quantity={}", productId, sellerId, request.stock());
         return StockUpdateResponse.from(inventory);
@@ -41,8 +48,12 @@ public class StockUpdateServiceImpl implements StockUpdateService {
         if (availableStocks < request.stock())
             throw new ApiException("Not enough available stock to deduct.", HttpStatus.BAD_REQUEST);
 
-        inventory.setTotalQuantity(inventory.getTotalQuantity() - request.stock());
+        int updatedTotalQuantity = inventory.getTotalQuantity() - request.stock();
+        inventory.setTotalQuantity(updatedTotalQuantity);
         inventoryRepository.save(inventory);
+
+        if (updatedTotalQuantity == 0)
+            inventoryProducerService.sendStockStatusUpdatedEvent(new StockStatusUpdatedEvent(productId, false));
 
         logger.info("Deducted stock from productId={} by sellerId={} quantity={}", productId, sellerId, request.stock());
         return StockUpdateResponse.from(inventory);

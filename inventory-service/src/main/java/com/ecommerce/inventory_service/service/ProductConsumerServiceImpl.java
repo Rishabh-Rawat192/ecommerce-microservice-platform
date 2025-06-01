@@ -23,8 +23,8 @@ public class ProductConsumerServiceImpl implements ProductConsumerService {
     private final InventoryService inventoryService;
 
     @KafkaListener(
-            topics = "${kafka.topic.productCreated}",
-            groupId = "${spring.kafka.consumer.group-id",
+            topics = "#{kafkaTopicProperties.productCreated}",
+            groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory"
     )
     @Override
