@@ -43,12 +43,4 @@ public class InventoryController {
         StockResponse response = stockService.deductStock(request, productId, userDto.userId());
         return ResponseEntity.ok(ApiResponse.success("Deducted product: " + productId, response));
     }
-
-    @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse<StockResponse>> getStock(@PathVariable UUID productId) {
-        logger.info("Getting product: {}", productId);
-
-        StockResponse response = stockService.getStock(productId);
-        return ResponseEntity.ok(ApiResponse.success("Product found successfully.", response));
-    }
 }
