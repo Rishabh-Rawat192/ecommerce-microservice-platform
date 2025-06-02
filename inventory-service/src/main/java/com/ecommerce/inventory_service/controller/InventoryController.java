@@ -2,9 +2,9 @@ package com.ecommerce.inventory_service.controller;
 
 import com.ecommerce.inventory_service.dto.ApiResponse;
 import com.ecommerce.inventory_service.dto.StockUpdateRequest;
-import com.ecommerce.inventory_service.dto.StockUpdateResponse;
+import com.ecommerce.inventory_service.dto.StockResponse;
 import com.ecommerce.inventory_service.dto.UserDto;
-import com.ecommerce.inventory_service.service.StockUpdateService;
+import com.ecommerce.inventory_service.service.StockService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -22,25 +22,33 @@ public class InventoryController {
 
     private static final Logger logger = LogManager.getLogger(InventoryController.class);
 
-    private final StockUpdateService stockUpdateService;
+    private final StockService stockService;
 
     @PostMapping("/{productId}/restock")
-    public ResponseEntity<ApiResponse<StockUpdateResponse>> restock(@PathVariable UUID productId, @Valid @RequestBody StockUpdateRequest request,
-                                                                    @AuthenticationPrincipal UserDto userDto) {
+    public ResponseEntity<ApiResponse<StockResponse>> restock(@PathVariable UUID productId, @Valid @RequestBody StockUpdateRequest request,
+                                                              @AuthenticationPrincipal UserDto userDto) {
         logger.info("Restocking product: {}, Stock: {}", productId, request.stock());
         logger.info("Authentication Principal in restock is: {}", userDto);
 
-        StockUpdateResponse response = stockUpdateService.restock(request, productId, userDto.userId());
+        StockResponse response = stockService.restock(request, productId, userDto.userId());
         return ResponseEntity.ok(ApiResponse.success("Restocked product: " + productId, response));
     }
 
     @PostMapping("/{productId}/deduct")
-    public ResponseEntity<ApiResponse<StockUpdateResponse>> deductStock(@PathVariable UUID productId, @Valid @RequestBody StockUpdateRequest request,
-                                                                        @AuthenticationPrincipal UserDto userDto) {
+    public ResponseEntity<ApiResponse<StockResponse>> deductStock(@PathVariable UUID productId, @Valid @RequestBody StockUpdateRequest request,
+                                                                  @AuthenticationPrincipal UserDto userDto) {
         logger.info("Deducting product: {}, Stock: {}", productId, request.stock());
         logger.info("Authentication Principal in deduct is: {}", userDto);
 
-        StockUpdateResponse response = stockUpdateService.deductStock(request, productId, userDto.userId());
+        StockResponse response = stockService.deductStock(request, productId, userDto.userId());
         return ResponseEntity.ok(ApiResponse.success("Deducted product: " + productId, response));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<StockResponse>> getStock(@PathVariable UUID productId) {
+        logger.info("Getting product: {}", productId);
+
+        StockResponse response = stockService.getStock(productId);
+        return ResponseEntity.ok(ApiResponse.success("Product found successfully.", response));
     }
 }
