@@ -20,7 +20,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(authHeaderFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authHeaderFilter, UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/internal/api/**")
+                                .permitAll()
+                                .anyRequest().authenticated());
 
         return http.build();
     }
