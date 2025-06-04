@@ -115,6 +115,18 @@ services:
     volumes:
       - postgres-data-inventory:/var/lib/postgresql/data
 
+  cart-service-db:
+    image: postgres:13
+    container_name: cart-service-db
+    environment:
+      - POSTGRES_USER=${CART_SERVICE_DB_USERNAME}
+      - POSTGRES_PASSWORD=${CART_SERVICE_DB_PASSWORD}
+      - POSTGRES_DB=${CART_SERVICE_DB}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres-data-cart:/var/lib/postgresql/data
+
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
@@ -139,4 +151,5 @@ volumes:
   postgres-data-product:
   postgres-data-catalog:
   postgres-data-inventory:
+  postgres-data-cart:
   kafka_data:

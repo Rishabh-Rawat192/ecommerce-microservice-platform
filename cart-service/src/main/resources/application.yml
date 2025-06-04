@@ -1,0 +1,13 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: cart-service
+
+  datasource:
+    url: ${CART_SERVICE_DB_URL:jdbc:postgresql://localhost:5436/cart_service_db}
+    username: ${CART_SERVICE_DB_USERNAME:cart_service_user}
+    password: ${CART_SERVICE_DB_PASSWORD:cart_service_password}
+    driver-class-name: org.postgresql.Driver
+
