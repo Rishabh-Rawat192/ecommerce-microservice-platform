@@ -115,6 +115,19 @@ services:
     volumes:
       - postgres-data-inventory:/var/lib/postgresql/data
 
+  cart-service:
+    image: cart-service
+    build: cart-service
+    container_name: cart-service
+    volumes:
+      - ./cart-service:/workspace
+    ports:
+      - "8085:8085"
+    env_file:
+      - .env
+    depends_on:
+      - cart-service-db
+
   cart-service-db:
     image: postgres:13
     container_name: cart-service-db
