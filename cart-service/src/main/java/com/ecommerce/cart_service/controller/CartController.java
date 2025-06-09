@@ -1,7 +1,7 @@
 package com.ecommerce.cart_service.controller;
 
-import com.ecommerce.cart_service.dto.CartItemCreateRequest;
-import com.ecommerce.cart_service.dto.CartItemUpdateRequest;
+import com.ecommerce.cart_service.dto.CreateCartItemRequest;
+import com.ecommerce.cart_service.dto.UpdateCartItemRequest;
 import com.ecommerce.cart_service.dto.UserDto;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
@@ -31,14 +31,14 @@ public class CartController {
     }
 
     @PostMapping("/items")
-    public ResponseEntity<String> createCartItem(@Valid @RequestBody CartItemCreateRequest request,
-                                                           @AuthenticationPrincipal UserDto userDto) {
+    public ResponseEntity<String> createCartItem(@Valid @RequestBody CreateCartItemRequest request,
+                                                 @AuthenticationPrincipal UserDto userDto) {
         logger.info("Create cart item for product {} for user {}",request.productId(), userDto.userId());
         return ResponseEntity.ok("Created item: " + request.productId());
     }
 
     @PatchMapping("/items/{cartItemId}")
-    public ResponseEntity<String> updateCartItem(@Valid @RequestBody CartItemUpdateRequest request, @PathVariable UUID cartItemId,
+    public ResponseEntity<String> updateCartItem(@Valid @RequestBody UpdateCartItemRequest request, @PathVariable UUID cartItemId,
                                                  @AuthenticationPrincipal UserDto userDto) {
         logger.info("Update cart item {} for user {}", cartItemId , userDto.userId());
         return ResponseEntity.ok("Updated item: " + cartItemId);
