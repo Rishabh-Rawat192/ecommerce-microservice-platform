@@ -1,8 +1,7 @@
 package com.ecommerce.cart_service.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -12,8 +11,11 @@ import java.util.UUID;
        uniqueConstraints = {
         @UniqueConstraint(columnNames = {"cart_user_id", "product_id"})
        })
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
