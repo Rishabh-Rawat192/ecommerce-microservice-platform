@@ -11,14 +11,10 @@ This system consists of multiple services, each responsible for a single busines
 - **User Service**: Handles user registration, login, JWT-based authentication, and role-based authorization.
 - **Gateway Service**: Acts as an API Gateway, routing requests to appropriate services and handling cross-cutting concerns like authentication and logging.
 - **Product Service**: Manages products for Seller endpoints, including CRUD operations and product management. Sends asynchronous events for catalog updates.
-
 - **Catalog Service** : Manages product catalog for user-facing queries, including product search, filtering, and sorting. This is a **read-heavy** service and consumes product events.
 - **Inventory Service** : Manages inventory levels, stock updates, and product availability. Supports stock reservation and consistency with order placement. This is a **write-heavy** service.
 - **Cart Service** : Manages shopping cart operations, including adding/removing/updating items and calculating totals. Maintains a cart per user session.
-- **Order Service** *(TODO)*: Handles order placement, validation, order history, and order status updates. Coordinates with inventory and (optionally) payment services for atomic order creation.
-
-- **Payment Service** *(optional, TODO)*: Processes payment-related logic, integrates with external payment gateways, and handles confirmations and refunds.
-- **Notification Service** *(optional, TODO)*: Sends emails or in-app notifications based on events like order confirmation or cart abandonment.
+- **Order Service** : Handles order placement, validation, order history, and order status updates. Coordinates with inventory and (optionally) payment services for atomic order creation.
 
 All services use **PostgreSQL**, and communication is enabled through **Kafka** for asynchronous communication
 between them but REST is used for synchronous communication wherever its required.
@@ -81,6 +77,12 @@ CART_SERVICE_DB_USERNAME=<cart_service_user>
 CART_SERVICE_DB_PASSWORD=<cart_service_password>
 CART_SERVICE_DATASOURCE_URL=<jdbc url>
 CART_SERVICE_HOST=cart-service
+
+ORDER_SERVICE_DB=<order_service_db>
+ORDER_SERVICE_DB_USERNAME=<order_service_user>
+ORDER_SERVICE_DB_PASSWORD=<order_service_password>
+ORDER_SERVICE_DATASOURCE_URL=<jdbc url>
+ORDER_SERVICE_HOST=order-service
 ```
 ### 3. Start Dependencies (DBs, etc.)
 

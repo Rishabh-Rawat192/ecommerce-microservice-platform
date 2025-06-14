@@ -140,6 +140,32 @@ services:
     volumes:
       - postgres-data-cart:/var/lib/postgresql/data
 
+  order-service:
+    image: order-service
+    build: order-service
+    container_name: order-service
+    volumes:
+      - ./order-service:/workspace
+    ports:
+      - "8086:8086"
+    env_file:
+      - .env
+    depends_on:
+      - order-service-db
+      - kafka
+
+  order-service-db:
+    image: postgres:13
+    container_name: order-service-db
+    environment:
+      - POSTGRES_USER=${ORDER_SERVICE_DB_USERNAME}
+      - POSTGRES_PASSWORD=${ORDER_SERVICE_DB_PASSWORD}
+      - POSTGRES_DB=${ORDER_SERVICE_DB}
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres-data-order:/var/lib/postgresql/data
+
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
@@ -165,4 +191,5 @@ volumes:
   postgres-data-catalog:
   postgres-data-inventory:
   postgres-data-cart:
+  postgres-data-order:
   kafka_data:
