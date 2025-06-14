@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface CatalogProductService {
     PagedResponse<ProductResponse> getProducts(ProductFilterRequest request);
     ProductResponse getById(UUID productId);
+    boolean productExists(UUID productId);
 }

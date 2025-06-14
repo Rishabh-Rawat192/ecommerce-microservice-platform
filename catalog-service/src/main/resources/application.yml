@@ -31,3 +31,4 @@ kafka:
 logging:
   level:
     org.hibernate.SQL: DEBUG
+    org.springframework.web: DEBUG

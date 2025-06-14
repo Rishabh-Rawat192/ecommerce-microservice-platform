@@ -75,6 +75,11 @@ public class CatalogProductServiceImp implements CatalogProductService {
         return ProductResponse.from(product);
     }
 
+    @Override
+    public boolean productExists(UUID productId) {
+        return catalogProductRepository.existsById(productId);
+    }
+
     private boolean validSortField(String sortBy) {
         return sortBy != null && ALLOWED_SORT_FIELDS.contains(sortBy);
     }
