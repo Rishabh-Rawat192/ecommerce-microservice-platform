@@ -19,3 +19,8 @@ spring:
       hibernate:
         format_sql: true
 
+
+catalog:
+  service:
+    url: "http://catalog-service:8083"
+

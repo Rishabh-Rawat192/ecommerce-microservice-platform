@@ -1,6 +1,7 @@
 package com.ecommerce.cart_service.service;
 
 
+import com.ecommerce.cart_service.client.CatalogClient;
 import com.ecommerce.cart_service.dto.CartItemResponse;
 import com.ecommerce.cart_service.dto.CreateCartItemRequest;
 import com.ecommerce.cart_service.dto.UpdateCartItemRequest;
@@ -30,7 +31,7 @@ public class CartServiceImpl implements CartService {
     private static final Logger logger = LogManager.getLogger(CartServiceImpl.class);
 
     private final CartRepository cartRepository;
-    private final EntityManager entityManager;
+    private final CatalogClient catalogClient;
 
     @Transactional(readOnly = true)
     @Override
@@ -58,6 +59,9 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartItemResponse createCartItem(CreateCartItemRequest request, UUID userId) {
+        if (!catalogClient.productExists(request.productId()))
+            throw new ApiException("Invalid product.", HttpStatus.BAD_REQUEST);
+
         Cart cart = cartRepository.findById(userId)
                         .orElse(Cart.builder()
                                 .userId(userId)
