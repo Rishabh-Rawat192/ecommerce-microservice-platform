@@ -9,3 +9,11 @@ spring:
     url: ${ORDER_SERVICE_DATASOURCE_URL:jdbc:postgresql://localhost:5437/order_service_db}
     username: ${ORDER_SERVICE_DB_USERNAME:order_service_user}
     password: ${ORDER_SERVICE_DB_PASSWORD:order_service_password}
+
+
+
+logging:
+  level:
+    com.ecommerce: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
