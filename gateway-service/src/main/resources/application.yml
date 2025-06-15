@@ -36,6 +36,10 @@ spring:
           uri: http://${CART_SERVICE_HOST:localhost}:8085
           predicates:
             - Path=/api/v1/cart/**
+        - id: order-service
+          uri: http://${ORDER_SERVICE_HOST:localhost}:8086
+          predicates:
+            - Path=/api/v1/orders/**
 
 jwt:
   secret: ${USER_SERVICE_JWT_SECRET:my-super-secret-key-1234567890123456}
