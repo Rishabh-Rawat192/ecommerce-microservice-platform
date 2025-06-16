@@ -1,9 +1,11 @@
 package com.ecommerce.order_service.entity;
 
+import com.ecommerce.order_service.enums.Currency;
 import com.ecommerce.order_service.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 @Builder
 public class Order {
     @Id
@@ -28,6 +31,12 @@ public class Order {
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
+
+    @Column(nullable = false)
+    private BigDecimal totalPrice;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -56,5 +65,11 @@ public class Order {
     public void removeItem(OrderItem item) {
         items.remove(item);
         item.setOrder(null);
+    }
+
+    public BigDecimal calculateTotalPrice() {
+        return this.items.stream()
+                .map(OrderItem::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

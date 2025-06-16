@@ -32,4 +32,10 @@ public class OrderItem {
     private BigDecimal price;
     @Column(nullable = false)
     private Integer quantity;
+    @Column(nullable = false)
+    private BigDecimal totalPrice;
+
+    public BigDecimal calculateTotalPrice() {
+        return price.multiply(BigDecimal.valueOf(quantity));
+    }
 }

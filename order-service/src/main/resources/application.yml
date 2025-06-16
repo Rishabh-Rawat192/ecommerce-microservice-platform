@@ -10,6 +10,10 @@ spring:
     username: ${ORDER_SERVICE_DB_USERNAME:order_service_user}
     password: ${ORDER_SERVICE_DB_PASSWORD:order_service_password}
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+
 
 
 logging:
