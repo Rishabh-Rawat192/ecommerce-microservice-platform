@@ -21,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private static Logger logger = LogManager.getLogger(OrderController.class);
+    private static final Logger logger = LogManager.getLogger(OrderController.class);
     private final OrderService orderService;
 
     @PostMapping

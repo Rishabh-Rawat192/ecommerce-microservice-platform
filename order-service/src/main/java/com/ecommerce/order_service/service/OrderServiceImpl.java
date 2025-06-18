@@ -1,5 +1,8 @@
 package com.ecommerce.order_service.service;
 
+import com.ecommerce.order_service.client.CartClient;
+import com.ecommerce.order_service.dto.ApiResponse;
+import com.ecommerce.order_service.dto.CartItemResponse;
 import com.ecommerce.order_service.dto.OrderResponse;
 import com.ecommerce.order_service.entity.Order;
 import com.ecommerce.order_service.entity.OrderItem;
@@ -12,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,9 +28,24 @@ public class OrderServiceImpl implements OrderService {
 
     private static final Logger logger = LogManager.getLogger(OrderServiceImpl.class);
     private final OrderRepository orderRepository;
+    private final CartClient cartClient;
 
+    @Transactional
     @Override
     public OrderResponse createOrder(UUID userId) {
+        clearPendingOrders(userId);
+
+        // Fetch all products from cart service
+        ApiResponse<List<CartItemResponse>> cartResponse = cartClient.getCartItems(userId);
+        if (!cartResponse.success()) {
+            logger.error("Cart retrieval failed for user: {} with message: {}", userId, cartResponse.message());
+            throw new ApiException("Failed to create order.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (cartResponse.data() == null || cartResponse.data().isEmpty()) {
+            logger.warn("No cart items found for user: {}", userId);
+            throw new ApiException("Cart is empty.", HttpStatus.BAD_REQUEST);
+        }
+
         UUID orderId = UUID.randomUUID();
         Order order = Order.builder()
                 .id(orderId)
@@ -33,27 +53,21 @@ public class OrderServiceImpl implements OrderService {
                 .currency(Currency.INR)
                 .orderStatus(OrderStatus.PENDING)
                 .build();
-        //TODO: Fetch all products from cart service
         //TODO: Validate and reserve each product from inventory service
         //TODO: Fetch price for each reserved product from catalog service
         // For now inserting dummy orderItems
 
-        OrderItem product1 = OrderItem.builder()
-                .productId(UUID.randomUUID())
-                .price(BigDecimal.valueOf(45.42))
-                .quantity(5)
-                .build();
+        // TODO: We'll update quantity once inventory validate and reserve is implemented
+        for (CartItemResponse cartItemResponse : cartResponse.data()) {
+            OrderItem orderItem = OrderItem.builder()
+                    .productId(cartItemResponse.productId())
+                    .price(BigDecimal.valueOf(45.42))
+                    .quantity(cartItemResponse.quantity())
+                    .build();
 
-        OrderItem product2 = OrderItem.builder()
-                .productId(UUID.randomUUID())
-                .price(BigDecimal.valueOf(999))
-                .quantity(2)
-                .build();
-
-        product1.setTotalPrice(product1.calculateTotalPrice());
-        product2.setTotalPrice(product2.calculateTotalPrice());
-        order.addItem(product1);
-        order.addItem(product2);
+            orderItem.setTotalPrice(orderItem.calculateTotalPrice());
+            order.addItem(orderItem);
+        }
 
         order.setTotalPrice(order.calculateTotalPrice());
         orderRepository.save(order);
@@ -106,5 +120,14 @@ public class OrderServiceImpl implements OrderService {
             throw new ApiException("Order does not belong to this user.", HttpStatus.FORBIDDEN);
 
         return order;
+    }
+
+    private void clearPendingOrders(UUID userId) {
+        List<Order> pendingOrders = orderRepository.findAllByUserIdAndOrderStatus(userId, OrderStatus.PENDING);
+
+        for (Order order : pendingOrders) {
+            // TODO: Need to send event or REST call to inventory to release stocks
+            orderRepository.delete(order);
+        }
     }
 }
