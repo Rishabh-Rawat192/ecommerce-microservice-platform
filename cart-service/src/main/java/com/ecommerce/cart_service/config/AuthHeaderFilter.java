@@ -28,6 +28,11 @@ public class AuthHeaderFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if (request.getRequestURI().startsWith("/internal/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String userId = request.getHeader("X-USER-ID");
             String email = request.getHeader("X-USER-EMAIL");

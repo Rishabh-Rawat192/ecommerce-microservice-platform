@@ -22,7 +22,10 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .addFilterBefore(authHeaderFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(manager -> manager
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/internal/**").permitAll()
+                        .anyRequest().authenticated());
 
         return http.build();
     }
