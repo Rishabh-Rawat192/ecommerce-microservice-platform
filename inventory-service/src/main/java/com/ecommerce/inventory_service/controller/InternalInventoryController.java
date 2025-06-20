@@ -1,9 +1,6 @@
 package com.ecommerce.inventory_service.controller;
 
-import com.ecommerce.inventory_service.dto.ApiResponse;
-import com.ecommerce.inventory_service.dto.StockResponse;
-import com.ecommerce.inventory_service.dto.StockUpdateRequest;
-import com.ecommerce.inventory_service.dto.UserDto;
+import com.ecommerce.inventory_service.dto.*;
 import com.ecommerce.inventory_service.service.StockService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/internal/api/v1/inventory")
+@RequestMapping("/internal/v1/inventory")
 @RequiredArgsConstructor
 public class InternalInventoryController {
 
@@ -29,5 +27,13 @@ public class InternalInventoryController {
 
         StockResponse response = stockService.getStock(productId);
         return ResponseEntity.ok(ApiResponse.success("Product found successfully.", response));
+    }
+
+    @PostMapping("/reserve")
+    public ResponseEntity<ApiResponse<List<ReserveStockItemResponse>>> reserveStock(@Valid @RequestBody ReserveStockRequest request) {
+        logger.info("Reserving stock for order: {}", request.orderId());
+
+        List<ReserveStockItemResponse> response = stockService.reserveStock(request);
+        return ResponseEntity.ok(ApiResponse.success("Stock reserved successfully.", response));
     }
 }

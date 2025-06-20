@@ -39,4 +39,8 @@ public class Inventory {
 
     @Version
     private Long version;
+
+    public int getAvailableStocks() {
+        return this.totalQuantity - this.reservedQuantity;
+    }
 }

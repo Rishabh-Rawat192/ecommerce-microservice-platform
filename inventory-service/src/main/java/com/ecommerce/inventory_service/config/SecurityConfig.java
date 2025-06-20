@@ -22,7 +22,7 @@ public class SecurityConfig {
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authHeaderFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/internal/api/**")
+                        auth.requestMatchers("/internal/**")
                                 .permitAll()
                                 .anyRequest().authenticated());
 

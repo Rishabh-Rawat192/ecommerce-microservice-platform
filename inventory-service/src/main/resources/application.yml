@@ -35,3 +35,7 @@ kafka:
   topic:
     productCreated: product.product.created
     stockStatusUpdated: inventory.stock.status-updated
+
+logging:
+  level:
+    com.ecommerce.inventory_service: DEBUG
