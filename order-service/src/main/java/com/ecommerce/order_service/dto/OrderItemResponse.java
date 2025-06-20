@@ -9,12 +9,10 @@ public record OrderItemResponse(
         UUID productId,
         BigDecimal price,
         BigDecimal totalPrice,
-        int requestedQuantity,
-        int reservedQuantity
+        int quantity
 ) {
     public static OrderItemResponse from (OrderItem item) {
         return new OrderItemResponse(item.getProductId(), item.getPrice(),
-                item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())),
-                item.getQuantity(), item.getQuantity());
+                item.getTotalPrice(), item.getQuantity());
     }
 }

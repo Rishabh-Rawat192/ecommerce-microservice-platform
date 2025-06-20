@@ -1,9 +1,6 @@
 package com.ecommerce.order_service.controller;
 
-import com.ecommerce.order_service.dto.ApiResponse;
-import com.ecommerce.order_service.dto.OrderItemResponse;
-import com.ecommerce.order_service.dto.OrderResponse;
-import com.ecommerce.order_service.dto.UserDto;
+import com.ecommerce.order_service.dto.*;
 import com.ecommerce.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
@@ -25,10 +22,10 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@AuthenticationPrincipal UserDto userDto) {
+    public ResponseEntity<ApiResponse<OrderCreateResponse>> createOrder(@AuthenticationPrincipal UserDto userDto) {
         logger.debug("Received request to create order for user: {}.", userDto.email());
 
-        OrderResponse response = orderService.createOrder(userDto.userId());
+        OrderCreateResponse response = orderService.createOrder(userDto.userId());
         return ResponseEntity.ok(ApiResponse.success("Order draft created successfully.", response));
     }
 

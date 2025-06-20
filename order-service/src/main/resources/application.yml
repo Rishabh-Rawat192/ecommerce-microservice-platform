@@ -20,6 +20,10 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
 
+inventory:
+  service:
+    url: http://inventory-service:8084
+
 cart:
   service:
     url: http://cart-service:8085

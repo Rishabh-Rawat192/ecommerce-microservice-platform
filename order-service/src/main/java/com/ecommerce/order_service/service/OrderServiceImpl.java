@@ -1,9 +1,8 @@
 package com.ecommerce.order_service.service;
 
 import com.ecommerce.order_service.client.CartClient;
-import com.ecommerce.order_service.dto.ApiResponse;
-import com.ecommerce.order_service.dto.CartItemResponse;
-import com.ecommerce.order_service.dto.OrderResponse;
+import com.ecommerce.order_service.client.InventoryClient;
+import com.ecommerce.order_service.dto.*;
 import com.ecommerce.order_service.entity.Order;
 import com.ecommerce.order_service.entity.OrderItem;
 import com.ecommerce.order_service.enums.Currency;
@@ -16,9 +15,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpServerErrorException;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,12 +28,12 @@ public class OrderServiceImpl implements OrderService {
     private static final Logger logger = LogManager.getLogger(OrderServiceImpl.class);
     private final OrderRepository orderRepository;
     private final CartClient cartClient;
+    private final InventoryClient inventoryClient;
 
     @Transactional
     @Override
-    public OrderResponse createOrder(UUID userId) {
+    public OrderCreateResponse createOrder(UUID userId) {
         clearPendingOrders(userId);
-
         // Fetch all products from cart service
         ApiResponse<List<CartItemResponse>> cartResponse = cartClient.getCartItems(userId);
         if (!cartResponse.success()) {
@@ -53,26 +52,35 @@ public class OrderServiceImpl implements OrderService {
                 .currency(Currency.INR)
                 .orderStatus(OrderStatus.PENDING)
                 .build();
-        //TODO: Validate and reserve each product from inventory service
-        //TODO: Fetch price for each reserved product from catalog service
-        // For now inserting dummy orderItems
 
-        // TODO: We'll update quantity once inventory validate and reserve is implemented
-        for (CartItemResponse cartItemResponse : cartResponse.data()) {
+        // Validate and reserve each product from inventory service
+        ApiResponse<List<ReserveStockItemResponse>> reservationRes =
+                inventoryClient.reserveStocks(ReserveStockRequest.from(orderId, cartResponse.data()));
+        if (!reservationRes.success() || reservationRes.data() == null || reservationRes.data().isEmpty()) {
+            logger.error("Product reservation failed for user: {} with message: {}", userId, reservationRes.message());
+            throw new ApiException("Failed to reserve products.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        List<OrderItemCreateResponse> orderItemResponses = new ArrayList<>();
+        //TODO: Fetch price for each reserved product from catalog service
+        for (ReserveStockItemResponse reserveStockItemResponse : reservationRes.data()) {
+            BigDecimal price = BigDecimal.valueOf(100.99);
             OrderItem orderItem = OrderItem.builder()
-                    .productId(cartItemResponse.productId())
-                    .price(BigDecimal.valueOf(45.42))
-                    .quantity(cartItemResponse.quantity())
+                    .productId(reserveStockItemResponse.productId())
+                    .price(price)
+                    .quantity(reserveStockItemResponse.reservedQuantity())
                     .build();
 
             orderItem.setTotalPrice(orderItem.calculateTotalPrice());
             order.addItem(orderItem);
+
+            orderItemResponses.add(OrderItemCreateResponse.from(reserveStockItemResponse, price, orderItem.getTotalPrice()));
         }
 
         order.setTotalPrice(order.calculateTotalPrice());
         orderRepository.save(order);
 
-        return OrderResponse.from(order);
+        return new OrderCreateResponse(orderId, orderItemResponses, order.getTotalPrice(), order.getCurrency(), OrderStatus.PENDING);
     }
 
     @Override
