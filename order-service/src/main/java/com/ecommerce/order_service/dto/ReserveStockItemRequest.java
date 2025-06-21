@@ -6,7 +6,7 @@ public record ReserveStockItemRequest(
         UUID productId,
         Integer quantity
 ) {
-    public static ReserveStockItemRequest from(CartItemResponse cartItemResponse) {
-        return new ReserveStockItemRequest(cartItemResponse.productId(), cartItemResponse.quantity());
+    public static ReserveStockItemRequest from(CartItemWithPrice cartItemWithPrice) {
+        return new ReserveStockItemRequest(cartItemWithPrice.productId(), cartItemWithPrice.quantity());
     }
 }

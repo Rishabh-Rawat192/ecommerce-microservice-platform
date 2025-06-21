@@ -7,8 +7,8 @@ public record ReserveStockRequest(
         UUID orderId,
         List<ReserveStockItemRequest> items
 ) {
-    public static ReserveStockRequest from(UUID orderId, List<CartItemResponse> cartItemResponses) {
-        List<ReserveStockItemRequest> reserveStockItemRequests = cartItemResponses.stream()
+    public static ReserveStockRequest from(UUID orderId, List<CartItemWithPrice> cartItemWithPrices) {
+        List<ReserveStockItemRequest> reserveStockItemRequests = cartItemWithPrices.stream()
                 .map(ReserveStockItemRequest::from)
                 .toList();
 

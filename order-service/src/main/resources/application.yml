@@ -27,3 +27,7 @@ inventory:
 cart:
   service:
     url: http://cart-service:8085
+
+catalog:
+  service:
+    url: http://catalog-service:8083
