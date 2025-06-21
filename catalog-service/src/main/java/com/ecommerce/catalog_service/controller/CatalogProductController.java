@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CatalogProductController {
 
-    private static Logger logger = LogManager.getLogger(CatalogProductController.class);
+    private static final Logger logger = LogManager.getLogger(CatalogProductController.class);
 
     private final CatalogProductService catalogProductService;
 

@@ -1,9 +1,6 @@
 package com.ecommerce.catalog_service.service;
 
-import com.ecommerce.catalog_service.dto.ApiResponse;
-import com.ecommerce.catalog_service.dto.PagedResponse;
-import com.ecommerce.catalog_service.dto.ProductFilterRequest;
-import com.ecommerce.catalog_service.dto.ProductResponse;
+import com.ecommerce.catalog_service.dto.*;
 
 import com.ecommerce.catalog_service.entity.CatalogProduct;
 import com.ecommerce.catalog_service.exception.ApiException;
@@ -12,8 +9,6 @@ import com.ecommerce.catalog_service.repository.specification.CatalogProductSpec
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.FetchNotFoundException;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +17,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -78,6 +75,31 @@ public class CatalogProductServiceImp implements CatalogProductService {
     @Override
     public boolean productExists(UUID productId) {
         return catalogProductRepository.existsById(productId);
+    }
+
+    @Override
+    public List<ProductPriceResponse> getProductsPrice(ProductsPriceRequest request) {
+        List<CatalogProduct> products = catalogProductRepository.findAllById(request.productIds());
+        Map<UUID, CatalogProduct> productIdToProduct = products.stream()
+                .collect(Collectors.toMap(CatalogProduct::getId, Function.identity()));
+
+        List<ProductPriceResponse> priceResponses = new ArrayList<>();
+
+        for (UUID productId : request.productIds()) {
+            CatalogProduct product = productIdToProduct.get(productId);
+            if (product != null) {
+                priceResponses.add(new ProductPriceResponse(productId,
+                        product.getPrice(),
+                        true));
+            } else {
+                logger.warn("Product with ID {} not found in the catalog", productId);
+                priceResponses.add(new ProductPriceResponse(productId,
+                        BigDecimal.ZERO,
+                        false));
+            }
+        }
+
+        return priceResponses;
     }
 
     private boolean validSortField(String sortBy) {

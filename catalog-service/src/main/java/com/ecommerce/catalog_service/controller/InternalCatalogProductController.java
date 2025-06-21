@@ -1,15 +1,17 @@
 package com.ecommerce.catalog_service.controller;
 
+import com.ecommerce.catalog_service.dto.ApiResponse;
+import com.ecommerce.catalog_service.dto.ProductPriceResponse;
+import com.ecommerce.catalog_service.dto.ProductsPriceRequest;
 import com.ecommerce.catalog_service.service.CatalogProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,5 +34,14 @@ public class InternalCatalogProductController {
             logger.info("Product does not exists with ID: {}", productId);
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/prices")
+    public ResponseEntity<ApiResponse<List<ProductPriceResponse>>> getProductsPrice(
+            @Valid @RequestBody ProductsPriceRequest request) {
+        logger.info("Request received to get products price.");
+
+        List<ProductPriceResponse> responses = catalogProductService.getProductsPrice(request);
+        return ResponseEntity.ok(ApiResponse.success("Successfully fetched products price.", responses));
     }
 }
