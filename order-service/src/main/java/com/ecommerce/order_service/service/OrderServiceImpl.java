@@ -71,7 +71,9 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() != OrderStatus.PENDING)
             throw new ApiException("Can't confirm order.", HttpStatus.BAD_REQUEST);
 
-        // TODO: Need to reduce stock of each product from inventory service
+        // Reduce stock of each product from inventory service
+        confirmReservation(orderId);
+        // TODO: send cart clear async event
         order.setOrderStatus(OrderStatus.CONFIRMED);
         orderRepository.save(order);
 
@@ -84,7 +86,8 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() != OrderStatus.CONFIRMED)
             throw new ApiException("Can't cancel order.", HttpStatus.BAD_REQUEST);
 
-        // TODO: Need to restock each product into inventory service
+        // Restock each product into inventory service
+        cancelReservation(orderId);
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
 
@@ -151,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
 
     private Map<UUID, ReserveStockItemResponse> reserveStocks(UUID orderId, List<CartItemWithPrice> cartItemWithPrices) {
         ReserveStockRequest reserveStockRequest = ReserveStockRequest.from(orderId, cartItemWithPrices);
-        ApiResponse<List<ReserveStockItemResponse>> reservationRes = inventoryClient.reserveStocks(reserveStockRequest);
+        ApiResponse<List<ReserveStockItemResponse>> reservationRes = inventoryClient.createReservation(reserveStockRequest);
 
         if (reservationRes == null || !reservationRes.success() || reservationRes.data() == null || reservationRes.data().isEmpty()) {
             logger.error("Product reservation failed with message: {}",
@@ -161,6 +164,25 @@ public class OrderServiceImpl implements OrderService {
 
         return reservationRes.data().stream()
                 .collect(Collectors.toMap(ReserveStockItemResponse::productId, Function.identity()));
+    }
+
+    private void confirmReservation(UUID orderId) {
+        ApiResponse<?> reservationRes = inventoryClient.confirmReservation(orderId);
+        if (reservationRes == null || !reservationRes.success()) {
+            logger.error("Failed to confirm order reservation for order: {} with reason: {}" , orderId,
+                    reservationRes != null ? reservationRes.message() : "No response received");
+            throw new ApiException("Failed to confirm order reservation.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // TODO: Replace this REST call with async event later
+    private void cancelReservation(UUID orderId) {
+        ApiResponse<?> reservationRes = inventoryClient.cancelReservation(orderId);
+        if (reservationRes == null || !reservationRes.success()) {
+            logger.error("Failed to cancel order reservation for order: {} with reason: {}" , orderId,
+                    reservationRes != null ? reservationRes.message() : "No response received");
+            throw new ApiException("Failed to cancel order reservation.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private void registerCreateOrderTransactionHooks(UUID orderId, UUID userId) {
@@ -192,16 +214,22 @@ public class OrderServiceImpl implements OrderService {
             ReserveStockItemResponse reserveStockItemResponse = productToReservation.get(cartItem.productId());
 
             if (price != null && reserveStockItemResponse != null) {
-                OrderItem orderItem = OrderItem.builder()
-                        .productId(reserveStockItemResponse.productId())
-                        .price(price)
-                        .quantity(reserveStockItemResponse.reservedQuantity())
-                        .build();
+                // Only add it to order if at least 1 item is reserved
+                BigDecimal totalPrice = BigDecimal.ZERO;
+                if (reserveStockItemResponse.reservedQuantity() > 0) {
+                    OrderItem orderItem = OrderItem.builder()
+                            .productId(reserveStockItemResponse.productId())
+                            .price(price)
+                            .quantity(reserveStockItemResponse.reservedQuantity())
+                            .build();
 
-                orderItem.setTotalPrice(orderItem.calculateTotalPrice());
-                order.addItem(orderItem);
+                    orderItem.setTotalPrice(orderItem.calculateTotalPrice());
+                    order.addItem(orderItem);
 
-                orderItemCreateResponses.add(OrderItemCreateResponse.from(reserveStockItemResponse, price, orderItem.getTotalPrice()));
+                    totalPrice = orderItem.getTotalPrice();
+                }
+
+                orderItemCreateResponses.add(OrderItemCreateResponse.from(reserveStockItemResponse, price, totalPrice));
             } else {
                 orderItemCreateResponses.add(new OrderItemCreateResponse(
                         cartItem.productId(),
