@@ -2,12 +2,13 @@ package com.ecommerce.inventory_service.service;
 
 import com.ecommerce.inventory_service.dto.*;
 import com.ecommerce.inventory_service.entity.Inventory;
+import com.ecommerce.inventory_service.entity.Reservation;
 import com.ecommerce.inventory_service.entity.ReservationItem;
-import com.ecommerce.inventory_service.entity.ReservationItemId;
 import com.ecommerce.inventory_service.enums.ReservationItemStatus;
+import com.ecommerce.inventory_service.enums.ReservationStatus;
 import com.ecommerce.inventory_service.exception.ApiException;
 import com.ecommerce.inventory_service.repository.InventoryRepository;
-import com.ecommerce.inventory_service.repository.ReservationItemRepository;
+import com.ecommerce.inventory_service.repository.ReservationRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -28,7 +29,7 @@ public class StockServiceImpl implements StockService {
 
     private final InventoryRepository inventoryRepository;
     private final InventoryProducerService inventoryProducerService;
-    private final ReservationItemRepository reservationItemRepository;
+    private final ReservationRepository reservationRepository;
     private final EntityManager entityManager;
 
     @Override
@@ -76,8 +77,8 @@ public class StockServiceImpl implements StockService {
 
     @Transactional
     @Override
-    public List<ReserveStockItemResponse> reserveStock(ReserveStockRequest request) {
-        if (reservationItemRepository.existsByIdOrderId(request.orderId()))
+    public List<ReserveStockItemResponse> createReservation(ReserveStockRequest request) {
+        if (reservationRepository.existsById(request.orderId()))
             throw new ApiException("Duplicate reservation request.", HttpStatus.BAD_REQUEST);
 
         Set<UUID> productIds = validateAndGetProductIds(request);
@@ -85,9 +86,13 @@ public class StockServiceImpl implements StockService {
         Map<UUID, Inventory> productIdToInventory = availableProducts.stream()
                 .collect(Collectors.toMap(Inventory::getProductId, Function.identity()));
 
+        Reservation reservation = Reservation.builder()
+                .orderId(request.orderId())
+                .reservationStatus(ReservationStatus.RESERVED)
+                .build();
+
         List<ReserveStockItemResponse> responses = new ArrayList<>();
         List<Inventory> inventoriesToUpdate = new ArrayList<>();
-        List<ReservationItem> reservationItemsToUpdate = new ArrayList<>();
 
         for (ReserveStockItemRequest item : request.items()) {
             UUID productId = item.productId();
@@ -99,29 +104,144 @@ public class StockServiceImpl implements StockService {
                 continue;
             }
 
-            int availableStocks = inventory.getAvailableStocks();
-            if (availableStocks <= 0) {
+            int reservedQuantity = Math.min(requestedQuantity, inventory.getAvailableStocks());
+            if (reservedQuantity == 0) {
                 responses.add(new ReserveStockItemResponse(productId, requestedQuantity, 0, ReservationItemStatus.OUT_OF_STOCK));
                 continue;
             }
 
-            int reservedQuantity = Math.min(requestedQuantity, availableStocks);
             inventory.setReservedQuantity(inventory.getReservedQuantity() + reservedQuantity);
             inventoriesToUpdate.add(inventory);
 
             ReservationItem reservationItem = ReservationItem.builder()
-                    .id(new ReservationItemId(request.orderId(), productId))
+                    .productId(productId)
                     .reservedQuantity(reservedQuantity)
                     .build();
-            reservationItemsToUpdate.add(reservationItem);
+            reservation.addItem(reservationItem);
 
             responses.add(new ReserveStockItemResponse(productId, requestedQuantity, reservedQuantity, ReservationItemStatus.RESERVED));
         }
 
         inventoryRepository.saveAll(inventoriesToUpdate);
-        reservationItemRepository.saveAll(reservationItemsToUpdate);
-        entityManager.flush();
+        reservationRepository.save(reservation);
         return responses;
+    }
+
+    @Transactional
+    @Override
+    public void confirmReservation(UUID orderId) {
+        Reservation reservation = reservationRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException("No reservation found.", HttpStatus.BAD_REQUEST));
+
+        if (!reservation.getReservationStatus().equals(ReservationStatus.RESERVED))
+            throw new ApiException("Can't confirm order.", HttpStatus.BAD_REQUEST);
+
+        deductInventoryStock(reservation);
+        reservation.setReservationStatus(ReservationStatus.CONFIRMED);
+        reservationRepository.save(reservation);
+    }
+
+    @Transactional
+    @Override
+    public void cancelReservation(UUID orderId) {
+        Reservation reservation = reservationRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException("No reservation found.", HttpStatus.BAD_REQUEST));
+
+        if (reservation.getReservationStatus().equals(ReservationStatus.CANCELLED))
+            throw new ApiException("Already cancelled order.", HttpStatus.BAD_REQUEST);
+
+        if (reservation.getReservationStatus().equals(ReservationStatus.CONFIRMED)) {
+            restockInventory(reservation);
+        } else if(reservation.getReservationStatus().equals(ReservationStatus.RESERVED)) {
+            releaseInventoryReservation(reservation);
+        }
+
+        reservation.setReservationStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
+    }
+
+    private void deductInventoryStock(Reservation reservation) {
+        List<Inventory> inventoryToUpdate = new ArrayList<>();
+
+        for (ReservationItem item : reservation.getItems()) {
+            UUID productId = item.getProductId();
+            int reservedQuantity = item.getReservedQuantity();
+
+            Inventory inventory = inventoryRepository.findById(productId)
+                    .orElseThrow(() -> new ApiException("Product inventory not found for product: " + productId,
+                            HttpStatus.NOT_FOUND));
+
+            if (inventory.getReservedQuantity() < reservedQuantity) {
+                throw new ApiException("Invalid stock reservation value of product: " + productId, HttpStatus.BAD_REQUEST);
+            }
+
+            inventory.setTotalQuantity(inventory.getTotalQuantity() - reservedQuantity);
+            inventory.setReservedQuantity(inventory.getReservedQuantity() - reservedQuantity);
+
+            // Sanity check: reserved + available should always equal total
+            if (inventory.getAvailableStocks() + inventory.getReservedQuantity() != inventory.getTotalQuantity()) {
+                logger.error("Inventory state corrupted for product: {}", productId);
+                throw new ApiException("Inventory state corrupted for product: " + productId, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            inventoryToUpdate.add(inventory);
+        }
+
+        inventoryRepository.saveAll(inventoryToUpdate);
+    }
+
+    private void restockInventory(Reservation reservation) {
+        List<Inventory> inventoryToUpdate = new ArrayList<>();
+
+        for (ReservationItem item : reservation.getItems()) {
+            UUID productId = item.getProductId();
+            int reservedQuantity = item.getReservedQuantity();
+
+            Inventory inventory = inventoryRepository.findById(productId)
+                    .orElseThrow(() -> new ApiException("Product inventory not found for product: " + productId,
+                            HttpStatus.NOT_FOUND));
+
+            inventory.setTotalQuantity(inventory.getTotalQuantity() + reservedQuantity);
+
+            // Sanity check: reserved + available should always equal total
+            if (inventory.getAvailableStocks() + inventory.getReservedQuantity() != inventory.getTotalQuantity()) {
+                logger.error("Inventory state corrupted for product: {}", productId);
+                throw new ApiException("Inventory state corrupted for product: " + productId, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            inventoryToUpdate.add(inventory);
+        }
+
+        inventoryRepository.saveAll(inventoryToUpdate);
+    }
+
+    private void releaseInventoryReservation(Reservation reservation) {
+        List<Inventory> inventoryToUpdate = new ArrayList<>();
+
+        for (ReservationItem item : reservation.getItems()) {
+            UUID productId = item.getProductId();
+            int reservedQuantity = item.getReservedQuantity();
+
+            Inventory inventory = inventoryRepository.findById(productId)
+                    .orElseThrow(() -> new ApiException("Product inventory not found for product: " + productId,
+                            HttpStatus.NOT_FOUND));
+
+            if (inventory.getReservedQuantity() < reservedQuantity) {
+                throw new ApiException("Invalid reservation of product: " + productId, HttpStatus.BAD_REQUEST);
+            }
+
+            inventory.setReservedQuantity(inventory.getReservedQuantity() - reservedQuantity);
+
+            // Sanity check: reserved + available should always equal total
+            if (inventory.getAvailableStocks() + inventory.getReservedQuantity() != inventory.getTotalQuantity()) {
+                logger.error("Inventory state corrupted for product: {}", productId);
+                throw new ApiException("Inventory state corrupted for product: " + productId, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            inventoryToUpdate.add(inventory);
+        }
+
+        inventoryRepository.saveAll(inventoryToUpdate);
     }
 
     private Set<UUID> validateAndGetProductIds(ReserveStockRequest request) {

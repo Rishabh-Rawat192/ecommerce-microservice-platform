@@ -13,5 +13,7 @@ public interface StockService {
     StockResponse deductStock(StockUpdateRequest request, UUID productId, UUID sellerId);
     StockResponse getStock(UUID productId);
 
-    List<ReserveStockItemResponse> reserveStock(ReserveStockRequest request);
+    List<ReserveStockItemResponse> createReservation(ReserveStockRequest request);
+    void confirmReservation(UUID orderId);
+    void cancelReservation(UUID orderId);
 }
