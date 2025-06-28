@@ -15,13 +15,17 @@ import com.ecommerce.order_service.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.aspectj.weaver.ast.Or;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,17 +40,18 @@ public class OrderServiceImpl implements OrderService {
     private final CartClient cartClient;
     private final InventoryClient inventoryClient;
     private final CatalogClient catalogClient;
+    private final OrderProducerService orderProducerService;
 
     @Transactional
     @Override
     public OrderCreateResponse createOrder(UUID userId) {
-        clearPendingOrders(userId);
         List<CartItemResponse> cartItems = fetchValidCartItems(userId);
         Map<UUID, BigDecimal> productToPrice = fetchValidProductPrices(cartItems);
         List<CartItemWithPrice> cartItemWithPrices = buildCartItemsWithPrice(cartItems, productToPrice);
 
         UUID orderId = UUID.randomUUID();
         Map<UUID, ReserveStockItemResponse> productToReservation = reserveStocks(orderId, cartItemWithPrices);
+        registerCreateOrderTransactionHooks(orderId, userId);
 
         Order order = Order.builder()
                 .id(orderId)
@@ -60,11 +65,11 @@ public class OrderServiceImpl implements OrderService {
 
         order.setTotalPrice(order.calculateTotalPrice());
         orderRepository.save(order);
-        registerCreateOrderTransactionHooks(orderId, userId);
 
         return new OrderCreateResponse(orderId, orderItemCreateResponses, order.getTotalPrice(), order.getCurrency(), OrderStatus.PENDING);
     }
 
+    @Transactional
     @Override
     public OrderResponse confirmOrder(UUID orderId, UUID userId) {
         Order order = getValidatedOrder(orderId, userId);
@@ -73,25 +78,49 @@ public class OrderServiceImpl implements OrderService {
 
         // Reduce stock of each product from inventory service
         confirmReservation(orderId);
-        // TODO: send cart clear async event
+        registerConfirmOrderTransactionHook(orderId, userId);
         order.setOrderStatus(OrderStatus.CONFIRMED);
         orderRepository.save(order);
 
         return OrderResponse.from(order);
     }
 
+    @Transactional
     @Override
     public OrderResponse cancelOrder(UUID orderId, UUID userId) {
         Order order = getValidatedOrder(orderId, userId);
         if (order.getOrderStatus() != OrderStatus.CONFIRMED)
             throw new ApiException("Can't cancel order.", HttpStatus.BAD_REQUEST);
 
-        // Restock each product into inventory service
-        cancelReservation(orderId);
+        registerCancelOrderTransactionHook(orderId, userId);
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
 
         return OrderResponse.from(order);
+    }
+
+    @Transactional
+    @Override
+    public void expireStaleOrders(LocalDateTime expiryThreshold) {
+        List<Order> staleOrders = orderRepository.findAllByOrderStatusAndCreatedAtBefore(OrderStatus.PENDING, expiryThreshold);
+
+        List <OrderExpiredEvent> expiredEvents = new ArrayList<>();
+        for (Order order : staleOrders) {
+            try {
+                UUID orderId = order.getId();
+                UUID userId = order.getUserId();
+
+                logger.info("Expiring order: {}", orderId);
+                order.setOrderStatus(OrderStatus.EXPIRED);
+                orderRepository.save(order);
+
+                expiredEvents.add(new OrderExpiredEvent(orderId, userId));
+            } catch (Exception e) {
+                logger.error("Failed to expire order: {}. Error: {}", order.getId(), e.getMessage());
+            }
+        }
+
+        registerExpireOrdersTransactionHook(expiredEvents);
     }
 
     @Override
@@ -175,29 +204,72 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    // TODO: Replace this REST call with async event later
-    private void cancelReservation(UUID orderId) {
-        ApiResponse<?> reservationRes = inventoryClient.cancelReservation(orderId);
-        if (reservationRes == null || !reservationRes.success()) {
-            logger.error("Failed to cancel order reservation for order: {} with reason: {}" , orderId,
-                    reservationRes != null ? reservationRes.message() : "No response received");
-            throw new ApiException("Failed to cancel order reservation.", HttpStatus.INTERNAL_SERVER_ERROR);
+    private void registerCreateOrderTransactionHooks(UUID orderId, UUID userId) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            logger.warn("Transaction synchronization is not active. Order creation hooks will not be registered.");
+            return;
         }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status != STATUS_COMMITTED) {
+                    OrderCreationFailed event = new OrderCreationFailed(orderId, userId);
+                    orderProducerService.sendOrderCreationFailedEvent(orderId, event);
+                }
+            }
+        });
     }
 
-    private void registerCreateOrderTransactionHooks(UUID orderId, UUID userId) {
+    private void registerConfirmOrderTransactionHook(UUID orderId, UUID userId) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            logger.warn("Transaction synchronization is not active. Order confirmation hooks will not be registered.");
+            return;
+        }
+
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                // TODO: Send clear cart event using userId which is key for cart of this user
+                OrderConfirmed event = new OrderConfirmed(orderId, userId);
+                orderProducerService.sendOrderConfirmedEvent(orderId, event);
             }
 
             @Override
             public void afterCompletion(int status) {
                 if (status != STATUS_COMMITTED) {
-                    /* TODO: If transaction failed, we need to send release reserved stocks event to inventory using orderId
-                        which is used to reserve stocks in inventory service.
-                     */
+                    OrderConfirmationFailed event = new OrderConfirmationFailed(orderId, userId);
+                    orderProducerService.sendOrderConfirmationFailedEvent(orderId, event);
+                }
+            }
+        });
+    }
+
+    private void registerCancelOrderTransactionHook(UUID orderId, UUID userId) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            logger.warn("Transaction synchronization is not active. Order cancellation hooks will not be registered.");
+            return;
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                OrderCancelled event = new OrderCancelled(orderId, userId);
+                orderProducerService.sendOrderCancelledEvent(orderId, event);
+            }
+        });
+    }
+
+    private void registerExpireOrdersTransactionHook(List<OrderExpiredEvent> expiredEvents) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            logger.warn("Transaction synchronization is not active. Order expiration hooks will not be registered.");
+            return;
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                for (OrderExpiredEvent event : expiredEvents) {
+                    orderProducerService.sendOrderExpiredEvent(event.orderId(), event);
                 }
             }
         });
@@ -244,14 +316,5 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orderItemCreateResponses;
-    }
-
-    private void clearPendingOrders(UUID userId) {
-        List<Order> pendingOrders = orderRepository.findAllByUserIdAndOrderStatus(userId, OrderStatus.PENDING);
-
-        for (Order order : pendingOrders) {
-            // TODO: Need to send event or REST call to inventory to release stocks
-            orderRepository.delete(order);
-        }
     }
 }

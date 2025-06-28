@@ -14,6 +14,25 @@ spring:
     hibernate:
       ddl-auto: update
 
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.UUIDSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+
+kafka:
+  topic:
+    orderCreationFailed: order.order.creation-failed
+    orderConfirmed: order.order.confirmed
+    orderConfirmationFailed: order.order.confirmation-failed
+    orderCancelled: order.order.cancelled
+    orderExpired: order.order.expired
+
+scheduler:
+  orderExpiryIntervalMillis: 60000 # 1 minute
+  orderExpiryThresholdMinutes: 2
+
 logging:
   level:
     com.ecommerce: DEBUG

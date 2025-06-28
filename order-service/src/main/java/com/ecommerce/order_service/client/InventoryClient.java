@@ -20,7 +20,4 @@ public interface InventoryClient {
     @PostMapping("/{orderId}/confirm")
     ApiResponse<?> confirmReservation(@PathVariable UUID orderId);
 
-    @PostMapping("/{orderId}/cancel")
-    ApiResponse<?> cancelReservation(@PathVariable UUID orderId);
-
 }
