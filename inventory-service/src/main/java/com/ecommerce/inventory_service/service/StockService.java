@@ -1,9 +1,6 @@
 package com.ecommerce.inventory_service.service;
 
-import com.ecommerce.inventory_service.dto.ReserveStockItemResponse;
-import com.ecommerce.inventory_service.dto.ReserveStockRequest;
-import com.ecommerce.inventory_service.dto.StockResponse;
-import com.ecommerce.inventory_service.dto.StockUpdateRequest;
+import com.ecommerce.inventory_service.dto.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,5 +12,9 @@ public interface StockService {
 
     List<ReserveStockItemResponse> createReservation(ReserveStockRequest request);
     void confirmReservation(UUID orderId);
-    void cancelReservation(UUID orderId);
+
+    void cancelReservation(OrderCancelledEvent event);
+    void expireReservation(OrderExpiredEvent event);
+    void rollbackReservation(OrderCreationFailedEvent event);
+    void rollbackReservationConfirmation(OrderConfirmationFailedEvent event);
 }

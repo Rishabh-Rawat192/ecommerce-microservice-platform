@@ -46,12 +46,4 @@ public class InternalInventoryController {
         stockService.confirmReservation(orderId);
         return ResponseEntity.ok(ApiResponse.success("Successfully confirmed reservation.", null));
     }
-
-    @PostMapping("/reservations/{orderId}/cancel")
-    public ResponseEntity<ApiResponse<?>> cancelReservation(@PathVariable @NotNull UUID orderId) {
-        logger.info("Cancelling reservation for order: {}", orderId);
-
-        stockService.cancelReservation(orderId);
-        return ResponseEntity.ok(ApiResponse.success("Successfully cancelled reservation.", null));
-    }
 }

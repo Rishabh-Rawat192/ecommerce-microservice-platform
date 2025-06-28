@@ -143,8 +143,8 @@ public class StockServiceImpl implements StockService {
 
     @Transactional
     @Override
-    public void cancelReservation(UUID orderId) {
-        Reservation reservation = reservationRepository.findById(orderId)
+    public void cancelReservation(OrderCancelledEvent event) {
+        Reservation reservation = reservationRepository.findById(event.orderId())
                 .orElseThrow(() -> new ApiException("No reservation found.", HttpStatus.BAD_REQUEST));
 
         if (reservation.getReservationStatus().equals(ReservationStatus.CANCELLED))
@@ -158,6 +158,52 @@ public class StockServiceImpl implements StockService {
 
         reservation.setReservationStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
+    }
+
+    @Transactional
+    @Override
+    public void expireReservation(OrderExpiredEvent event) {
+        Reservation reservation = reservationRepository.findById(event.orderId())
+                .orElseThrow(() -> new ApiException("No reservation found.", HttpStatus.BAD_REQUEST));
+
+        if (!reservation.getReservationStatus().equals(ReservationStatus.RESERVED))
+            throw new ApiException("Only pending orders can be expired.", HttpStatus.BAD_REQUEST);
+
+        // Release the reserved stock back to inventory
+        releaseInventoryReservation(reservation);
+        reservation.setReservationStatus(ReservationStatus.EXPIRED);
+        reservationRepository.save(reservation);
+        logger.info("Expired reservation for order: {}", event.orderId());
+    }
+
+    @Override
+    public void rollbackReservation(OrderCreationFailedEvent event) {
+        Reservation reservation = reservationRepository.findById(event.orderId())
+                .orElseThrow(() -> new ApiException("No reservation found.", HttpStatus.BAD_REQUEST));
+
+        if (!reservation.getReservationStatus().equals(ReservationStatus.RESERVED))
+            throw new ApiException("Only pending orders can be rolled back.", HttpStatus.BAD_REQUEST);
+
+        // Release the reserved stock back to inventory
+        releaseInventoryReservation(reservation);
+        reservation.setReservationStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
+        logger.info("Rolled back reservation for order: {}", event.orderId());
+    }
+
+    @Override
+    public void rollbackReservationConfirmation(OrderConfirmationFailedEvent event) {
+        Reservation reservation = reservationRepository.findById(event.orderId())
+                .orElseThrow(() -> new ApiException("No reservation found.", HttpStatus.BAD_REQUEST));
+
+        if (!reservation.getReservationStatus().equals(ReservationStatus.CONFIRMED))
+            throw new ApiException("Only confirmed orders can be rolled back.", HttpStatus.BAD_REQUEST);
+
+        // Restock the inventory since the confirmation failed
+        restockInventory(reservation);
+        reservation.setReservationStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
+        logger.info("Rolled back reservation confirmation for order: {}", event.orderId());
     }
 
     private void deductInventoryStock(Reservation reservation) {

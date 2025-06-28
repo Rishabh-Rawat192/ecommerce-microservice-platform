@@ -36,6 +36,11 @@ kafka:
     productCreated: product.product.created
     stockStatusUpdated: inventory.stock.status-updated
 
+    orderCreationFailed: order.order.creation-failed
+    orderConfirmationFailed: order.order.confirmation-failed
+    orderCancelled: order.order.cancelled
+    orderExpired: order.order.expired
+
 logging:
   level:
     com.ecommerce.inventory_service: DEBUG
