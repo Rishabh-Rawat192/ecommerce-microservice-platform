@@ -24,8 +24,8 @@ public class OrderProducerServiceImpl implements OrderProducerService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void sendOrderCreationFailedEvent(UUID orderId, OrderCreationFailed event) {
-        String eventName = "OrderCreationFailed";
+    public void sendOrderCreationFailedEvent(UUID orderId, OrderCreationFailedEvent event) {
+        String eventName = "OrderCreationFailedEvent";
         String topicName = kafkaTopicProperties.getOrderCreationFailed();
 
         logger.info("Sending {} event to Kafka topic {}: key = {}, value = {}",
@@ -35,8 +35,8 @@ public class OrderProducerServiceImpl implements OrderProducerService {
     }
 
     @Override
-    public void sendOrderConfirmedEvent(UUID orderId, OrderConfirmed event) {
-        String eventName = "OrderConfirmed";
+    public void sendOrderConfirmedEvent(UUID orderId, OrderConfirmedEvent event) {
+        String eventName = "OrderConfirmedEvent";
         String topicName = kafkaTopicProperties.getOrderConfirmed();
 
         logger.info("Sending {} event to Kafka topic {}: key = {}, value = {}",
@@ -46,8 +46,8 @@ public class OrderProducerServiceImpl implements OrderProducerService {
     }
 
     @Override
-    public void sendOrderConfirmationFailedEvent(UUID orderId, OrderConfirmationFailed event) {
-        String eventName = "OrderConfirmationFailed";
+    public void sendOrderConfirmationFailedEvent(UUID orderId, OrderConfirmationFailedEvent event) {
+        String eventName = "OrderConfirmationFailedEvent";
         String topicName = kafkaTopicProperties.getOrderConfirmationFailed();
 
         logger.info("Sending {} event to Kafka topic {}: key = {}, value = {}",
@@ -57,8 +57,8 @@ public class OrderProducerServiceImpl implements OrderProducerService {
     }
 
     @Override
-    public void sendOrderCancelledEvent(UUID orderId, OrderCancelled event) {
-        String eventName = "OrderCancelled";
+    public void sendOrderCancelledEvent(UUID orderId, OrderCancelledEvent event) {
+        String eventName = "OrderCancelledEvent";
         String topicName = kafkaTopicProperties.getOrderCancelled();
 
         logger.info("Sending {} event to Kafka topic {}: key = {}, value = {}",

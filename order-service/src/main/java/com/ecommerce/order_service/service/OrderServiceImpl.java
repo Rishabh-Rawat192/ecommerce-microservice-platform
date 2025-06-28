@@ -9,16 +9,12 @@ import com.ecommerce.order_service.entity.OrderItem;
 import com.ecommerce.order_service.enums.Currency;
 import com.ecommerce.order_service.enums.OrderItemStatus;
 import com.ecommerce.order_service.enums.OrderStatus;
-import com.ecommerce.order_service.enums.ReservationItemStatus;
 import com.ecommerce.order_service.exception.ApiException;
 import com.ecommerce.order_service.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.aspectj.weaver.ast.Or;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -214,7 +210,7 @@ public class OrderServiceImpl implements OrderService {
             @Override
             public void afterCompletion(int status) {
                 if (status != STATUS_COMMITTED) {
-                    OrderCreationFailed event = new OrderCreationFailed(orderId, userId);
+                    OrderCreationFailedEvent event = new OrderCreationFailedEvent(orderId, userId);
                     orderProducerService.sendOrderCreationFailedEvent(orderId, event);
                 }
             }
@@ -230,14 +226,14 @@ public class OrderServiceImpl implements OrderService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                OrderConfirmed event = new OrderConfirmed(orderId, userId);
+                OrderConfirmedEvent event = new OrderConfirmedEvent(orderId, userId);
                 orderProducerService.sendOrderConfirmedEvent(orderId, event);
             }
 
             @Override
             public void afterCompletion(int status) {
                 if (status != STATUS_COMMITTED) {
-                    OrderConfirmationFailed event = new OrderConfirmationFailed(orderId, userId);
+                    OrderConfirmationFailedEvent event = new OrderConfirmationFailedEvent(orderId, userId);
                     orderProducerService.sendOrderConfirmationFailedEvent(orderId, event);
                 }
             }
@@ -253,7 +249,7 @@ public class OrderServiceImpl implements OrderService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                OrderCancelled event = new OrderCancelled(orderId, userId);
+                OrderCancelledEvent event = new OrderCancelledEvent(orderId, userId);
                 orderProducerService.sendOrderCancelledEvent(orderId, event);
             }
         });
