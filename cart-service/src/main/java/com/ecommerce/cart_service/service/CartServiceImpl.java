@@ -46,6 +46,7 @@ public class CartServiceImpl implements CartService {
     public void deleteCart(UUID userId) {
         Cart cart = getUserCart(userId);
         cartRepository.delete(cart);
+        logger.info("Cart with userId {} has been deleted.", userId);
     }
 
     @Transactional(readOnly = true)
