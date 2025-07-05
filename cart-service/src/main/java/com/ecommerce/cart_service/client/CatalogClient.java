@@ -3,9 +3,9 @@ package com.ecommerce.cart_service.client;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.UUID;
@@ -21,6 +21,7 @@ public class CatalogClient {
         this.webClient = webClient;
     }
 
+    @Cacheable(value = "catalog", key = "'product:exists:' + #productId")
     public boolean productExists(UUID productId) {
         try {
             webClient

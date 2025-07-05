@@ -26,6 +26,16 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.UUIDDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
+  cache:
+    type: redis
+    redis:
+      time-to-live: 5m
+      cache-null-values: false
+
+  redis:
+    host: cart-service-cache
+    port: 6379
+    timeout: 2000
 
 kafka:
   topic:
@@ -36,3 +46,10 @@ catalog:
   service:
     url: "http://catalog-service:8083"
 
+
+logging:
+  level:
+    org.springframework.cache: DEBUG
+    org.springframework.cache.interceptor: DEBUG
+    org.springframework.data.redis: DEBUG
+    io.lettuce.core: DEBUG
