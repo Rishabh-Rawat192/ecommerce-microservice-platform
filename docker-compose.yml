@@ -127,6 +127,8 @@ services:
       - .env
     depends_on:
       - cart-service-db
+      - cart-service-cache
+      - kafka
 
   cart-service-db:
     image: postgres:13
@@ -139,6 +141,14 @@ services:
       - "5436:5432"
     volumes:
       - postgres-data-cart:/var/lib/postgresql/data
+
+  cart-service-cache:
+    image: redis:8.0.2
+    container_name: cart-service-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data-cart:/data
 
   order-service:
     image: order-service
@@ -167,7 +177,7 @@ services:
       - postgres-data-order:/var/lib/postgresql/data
 
   kafka:
-    image: bitnami/kafka:latest
+    image: bitnami/kafka:4.0.0
     container_name: kafka
     ports:
       - "9092:9092"
@@ -193,3 +203,4 @@ volumes:
   postgres-data-cart:
   postgres-data-order:
   kafka_data:
+  redis-data-cart:
