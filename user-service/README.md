@@ -102,8 +102,12 @@ mvn test
 
 ## 📘 Documentation
 
-- [Auth Module Design](docs/auth_service_design.md)
-- [Auth DB Schema](./docs/auth_service_db_schema.md)
+- **Auth Module Design:** Detailed explanation of authentication, registration, JWT token handling, and role-based access control is available in [Auth Module Design](docs/auth_service_design.md).
+- **User & Seller Module Design:** The user and seller modules manage buyer and seller profiles, including registration, profile updates, and access control. Each module uses DTOs for request/response validation and enforces that only the profile owner can update their data. Business logic is separated into service classes for maintainability.
+- **API Models:** All request and response payloads are defined as DTOs in the codebase, ensuring type safety and validation. API responses are consistently wrapped in a standard response object for clarity.
+- **Error Handling:** The service uses custom exceptions and a global exception handler to provide clear, consistent error messages and appropriate HTTP status codes.
+- **Security:** Endpoints for sensitive operations require authentication and proper roles (USER or SELLER), enforced via JWT and Spring Security. Only the resource owner can update their profile.
+- **Kafka Events:** The user-service communicates with other microservices (such as product, inventory, or catalog services) using Kafka events. For example, when a seller profile is registered or updated, a corresponding event is published to a Kafka topic to notify other services of the change. This enables eventual consistency and decoupled communication between services. Kafka configuration (topics, producer/consumer settings) is managed in the codebase, and event payloads are defined as DTOs for type safety.
 
 ---
 
