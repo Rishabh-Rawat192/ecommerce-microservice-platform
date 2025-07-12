@@ -22,25 +22,27 @@ This service handles all user-related operations including **authentication**, *
 ```
 user-service/
 ├── src/
-│   ├── main/java/com/ecommerce/user/
+│   ├── main/java/com/ecommerce/user_service/
 │   │   ├── auth/
 │   │   ├── user/
 │   │   ├── seller/
 │   │   ├── common/
-│   │ 
 │   └── resources/
 │       ├── application.yml
 │       └── ...
 ├── Dockerfile
 ├── README.md
-└── pom.xml
+├── pom.xml
+├── docs/
+│   ├── auth_service_db_schema.md
+│   ├── auth_service_design.md
+│   └── ...
+
 ```
 
 ---
 
 ## 🔐 API Endpoints
-
-### 🔸 Auth
 
 ### 🔸 Auth
 
@@ -52,8 +54,6 @@ user-service/
 
 ### 🔸 User Profile
 
-### 🔸 User Profile
-
 | Method | Endpoint                     | Description                  |
 |--------|------------------------------|------------------------------|
 | POST   | `/api/v1/users`              | Register a user profile      |
@@ -62,20 +62,48 @@ user-service/
 
 ### 🔸 Seller Profile
 
-| Method | Endpoint                | Description           |
-|--------|-------------------------|-----------------------|
-| GET    | `/api/seller/profile`   | Get seller profile    |
-| PUT    | `/api/seller/profile`   | Update seller profile |
+| Method | Endpoint                        | Description                |
+|--------|----------------------------------|----------------------------|
+| POST   | `/api/v1/sellers`               | Register seller profile    |
+| GET    | `/api/v1/sellers/{userId}`      | Get seller profile by ID   |
+| PATCH  | `/api/v1/sellers/{userId}`      | Update seller profile      |
 
 > 📄 Detailed request/response schemas available in the `/docs` directory.
 
 ---
 
+## 🛠️ Setup & Development
+
+### Prerequisites
+- Java 17+
+- Maven 3.8+
+- Docker (optional, for containerization)
+
+### Build & Run
+
+```bash
+# Build the project
+mvn clean install
+
+# Run the service
+mvn spring-boot:run
+```
+
+### Environment Variables
+- Configure database and JWT secrets in `src/main/resources/application.yml`.
+
+### Testing
+
+```bash
+mvn test
+```
+
+---
+
 ## 📘 Documentation
 
-- [Auth Module Design](./auth_service_design.md)
-- `user_profile_design.md`
-- `seller_profile_design.md`
+- [Auth Module Design](docs/auth_service_design.md)
+- [Auth DB Schema](./docs/auth_service_db_schema.md)
 
 ---
 
@@ -84,6 +112,5 @@ user-service/
 - 🔁 Refresh token support
 - ✅ Seller KYC verification flow
 - 📧 Email verification during registration
-
 
 **MIT License** | Built with ☕ and Spring Boot
