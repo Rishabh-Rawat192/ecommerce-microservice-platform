@@ -1,34 +1,14 @@
-# 📦 Product Service – E-Commerce Microservice
+# Product Service
 
-This service manages all product-related operations for the e-commerce platform, including product registration, retrieval, update, and deletion. It is designed as a Spring Boot microservice and integrates with authentication and seller verification mechanisms.
+The **Product Service** manages all product-related operations for the e-commerce platform, including product registration, retrieval, update, and deletion. It is designed as a Spring Boot microservice and integrates with authentication and seller verification mechanisms.
 
----
+## Features
+- Register, update, and delete products
+- Retrieve product details and seller's products
+- Integrates with authentication and seller verification
+- Publishes product events to Kafka for other services
 
-## 📂 Directory Structure
-
-```
-product-service/
-├── src/
-│   ├── main/java/com/ecommerce/product_service/
-│   │   ├── controller/
-│   │   ├── service/
-│   │   ├── dto/
-│   │   ├── entity/
-│   │   ├── repository/
-│   │   ├── config/
-│   │   ├── exception/
-│   └── resources/
-│       ├── application.yml
-│       └── ...
-├── Dockerfile
-├── pom.xml
-├── README.md
-└── ...
-```
-
----
-
-## 🔐 API Endpoints
+## API Endpoints
 
 All endpoints are prefixed with `/api/v1/products`.
 
@@ -43,50 +23,48 @@ All endpoints are prefixed with `/api/v1/products`.
 - All seller endpoints require a valid JWT and SELLER role.
 - Product registration and updates are only allowed for active sellers.
 
+## Kafka Integration
+- Publishes product events (created, updated, deleted) to Kafka for other services (e.g., catalog, inventory).
+
+## Modules and Structure
+- **Controller Layer:** Exposes REST APIs for product management.
+- **Service Layer:** Business logic for product operations and event handling.
+- **DTOs:** Data transfer objects for API requests, responses, and Kafka events.
+- **Repository:** JPA repository for product persistence.
+- **Exception Handling:** Centralized error handling for API responses.
+
+## Configuration
+- **Database:** PostgreSQL (configurable via `application.yml`)
+- **Kafka:** Configured for event-driven communication (see `application.yml`)
+- **Port:** Default 8082
+
+## Running Locally
+1. Ensure PostgreSQL and Kafka are running (see `docker-compose.yml` in the root project).
+2. Build and run the service:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+3. The service will be available at `http://localhost:8082`.
+
+## Environment Variables
+- `PRODUCT_SERVICE_DATASOURCE_URL` (optional): Override the default DB URL.
+- `PRODUCT_SERVICE_DB_USERNAME` (optional): DB username.
+- `PRODUCT_SERVICE_DB_PASSWORD` (optional): DB password.
+
+## Error Handling
+All API responses are wrapped in a standard `ApiResponse` object. Validation and business errors are handled gracefully and return meaningful messages.
+
+## Related Services
+- **User Service:** For authentication and seller verification.
+- **Catalog Service:** Consumes product events for catalog updates.
+- **Inventory Service:** Consumes product events for inventory initialization.
+
+## Extending the Service
+- To add new product features, update the `Product` entity and related DTOs.
+- To handle new Kafka events, add producers in the service layer.
+
 ---
 
-## 🛠️ Setup & Development
-
-### Prerequisites
-- Java 17+
-- Maven 3.8+
-- Docker (optional)
-
-### Build & Run
-
-```bash
-# Build the project
-mvn clean install
-
-# Run the service
-mvn spring-boot:run
-```
-
-### Environment Variables
-- Configure database, Kafka, and security settings in `src/main/resources/application.yml`.
-
----
-
-## 🧪 Testing
-
-```bash
-mvn test
-```
-
----
-
-## 📘 Documentation & Design
-
-- **API Models:** Product registration, update, and response use DTOs such as `ProductRegisterRequest`, `ProductUpdateRequest`, and `ProductResponse`. All API responses are wrapped in a standard `ApiResponse` object for consistency.
-- **Error Handling:** Custom exceptions (e.g., `ApiException`) and a global exception handler ensure meaningful error messages and proper HTTP status codes for all API errors.
-- **Security:** Endpoints for product creation, update, and deletion require authentication and the `SELLER` role, enforced via JWT and Spring Security configuration. Only the product owner (seller) can modify or delete their products.
-- **Kafka Integration:** The service integrates with inventory and catalog services using Kafka. When a product is created, updated, or deleted, corresponding events (`ProductCreatedEvent`, `ProductUpdatedEvent`, `ProductDeletedEvent`) are published to Kafka topics. The service also consumes seller status updates from Kafka to ensure only active sellers can manage products. Kafka configuration is managed in `KafkaTopicProperties` and consumer logic in `SellerStatusConsumerService`.
-
----
-
-## 🚀 Future Enhancements
-
-- Product image upload support
-- Advanced product search and filtering
+For more details, refer to the codebase and configuration files.
 
 **MIT License** | Built with ☕ and Spring Boot

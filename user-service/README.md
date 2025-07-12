@@ -1,120 +1,75 @@
-# 🧑‍💼 User Service – E-Commerce Microservice
+# User Service
 
-This service handles all user-related operations including **authentication**, **user profile management**, and **seller profile management**. It is one of the core services of the `ecommerce-microservices` architecture.
+The **User Service** handles all user-related operations including authentication, user profile management, and seller profile management. It is a core service in the e-commerce microservices architecture.
 
----
+## Features
+- User registration and authentication (JWT-based)
+- Buyer and seller profile management
+- Role-based access control
+- Seller verification and business details
 
-## 📦 Modules
+## API Endpoints
 
-- **Auth Module**  
-  Handles registration, login, JWT token generation, role-based access control.
+All endpoints are prefixed with `/api/v1`.
 
-- **User Profile Module**  
-  Buyer profile management (name, contact info, address, etc.).
-
-- **Seller Profile Module**  
-  Seller-specific profile info such as business details and verification documents.
-
----
-
-## 📂 Directory Structure
-
-```
-user-service/
-├── src/
-│   ├── main/java/com/ecommerce/user_service/
-│   │   ├── auth/
-│   │   ├── user/
-│   │   ├── seller/
-│   │   ├── common/
-│   └── resources/
-│       ├── application.yml
-│       └── ...
-├── Dockerfile
-├── README.md
-├── pom.xml
-├── docs/
-│   ├── auth_service_db_schema.md
-│   ├── auth_service_design.md
-│   └── ...
-
-```
-
----
-
-## 🔐 API Endpoints
-
-### 🔸 Auth
-
+### Auth
 | Method | Endpoint                 | Description                   |
 |--------|--------------------------|-------------------------------|
-| POST   | `/api/v1/auth/register`  | Register a new user or seller |
-| POST   | `/api/v1/auth/login`     | Login with credentials        |
-| GET    | `/api/v1/auth/protected` | Test endpoint for token       |
+| POST   | `/auth/register`         | Register a new user           |
+| POST   | `/auth/login`            | User login and JWT issuance   |
 
-### 🔸 User Profile
+### User
+| Method | Endpoint                 | Description                   |
+|--------|--------------------------|-------------------------------|
+| GET    | `/users/me`              | Get current user profile      |
+| PUT    | `/users/me`              | Update user profile           |
 
-| Method | Endpoint                     | Description                  |
-|--------|------------------------------|------------------------------|
-| POST   | `/api/v1/users`              | Register a user profile      |
-| GET    | `/api/v1/users/{userId}`     | Get user profile by ID       |
-| PATCH  | `/api/v1/users/{userId}`     | Update user profile by ID    |
+### Seller
+| Method | Endpoint                 | Description                   |
+|--------|--------------------------|-------------------------------|
+| GET    | `/sellers/me`            | Get current seller profile    |
+| PUT    | `/sellers/me`            | Update seller profile         |
 
-### 🔸 Seller Profile
+- All endpoints (except registration/login) require a valid JWT.
 
-| Method | Endpoint                        | Description                |
-|--------|----------------------------------|----------------------------|
-| POST   | `/api/v1/sellers`               | Register seller profile    |
-| GET    | `/api/v1/sellers/{userId}`      | Get seller profile by ID   |
-| PATCH  | `/api/v1/sellers/{userId}`      | Update seller profile      |
+## Modules and Structure
+- **Auth Module:** Registration, login, JWT, and role management
+- **User Profile Module:** Buyer profile management
+- **Seller Profile Module:** Seller business and verification
+- **DTOs:** Data transfer objects for API requests and responses
+- **Repository:** JPA repository for user and seller persistence
+- **Exception Handling:** Centralized error handling for API responses
 
-> 📄 Detailed request/response schemas available in the `/docs` directory.
+## Configuration
+- **Database:** PostgreSQL (configurable via `application.yml`)
+- **Port:** Default 8080
 
----
+## Running Locally
+1. Ensure PostgreSQL is running (see `docker-compose.yml` in the root project).
+2. Build and run the service:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+3. The service will be available at `http://localhost:8080`.
 
-## 🛠️ Setup & Development
+## Environment Variables
+- `USER_SERVICE_DATASOURCE_URL` (optional): Override the default DB URL.
+- `USER_SERVICE_DB_USERNAME` (optional): DB username.
+- `USER_SERVICE_DB_PASSWORD` (optional): DB password.
+- `USER_SERVICE_JWT_SECRET` (JWT secret for token generation/validation)
 
-### Prerequisites
-- Java 17+
-- Maven 3.8+
-- Docker (optional, for containerization)
+## Error Handling
+All API responses are wrapped in a standard `ApiResponse` object. Validation and business errors are handled gracefully and return meaningful messages.
 
-### Build & Run
+## Related Services
+- **Product Service:** For seller product management
+- **Order Service:** For user order management
+- **Gateway Service:** For authentication and routing
 
-```bash
-# Build the project
-mvn clean install
-
-# Run the service
-mvn spring-boot:run
-```
-
-### Environment Variables
-- Configure database and JWT secrets in `src/main/resources/application.yml`.
-
-### Testing
-
-```bash
-mvn test
-```
-
----
-
-## 📘 Documentation
-
-- **Auth Module Design:** Detailed explanation of authentication, registration, JWT token handling, and role-based access control is available in [Auth Module Design](docs/auth_service_design.md).
-- **User & Seller Module Design:** The user and seller modules manage buyer and seller profiles, including registration, profile updates, and access control. Each module uses DTOs for request/response validation and enforces that only the profile owner can update their data. Business logic is separated into service classes for maintainability.
-- **API Models:** All request and response payloads are defined as DTOs in the codebase, ensuring type safety and validation. API responses are consistently wrapped in a standard response object for clarity.
-- **Error Handling:** The service uses custom exceptions and a global exception handler to provide clear, consistent error messages and appropriate HTTP status codes.
-- **Security:** Endpoints for sensitive operations require authentication and proper roles (USER or SELLER), enforced via JWT and Spring Security. Only the resource owner can update their profile.
-- **Kafka Events:** The user-service communicates with other microservices (such as product, inventory, or catalog services) using Kafka events. For example, when a seller profile is registered or updated, a corresponding event is published to a Kafka topic to notify other services of the change. This enables eventual consistency and decoupled communication between services. Kafka configuration (topics, producer/consumer settings) is managed in the codebase, and event payloads are defined as DTOs for type safety.
+## Extending the Service
+- To add new user or seller features, update the relevant entities and DTOs.
+- To add new authentication logic, update the Auth module.
 
 ---
 
-## 🚀 Future Enhancements
-
-- 🔁 Refresh token support
-- ✅ Seller KYC verification flow
-- 📧 Email verification during registration
-
-**MIT License** | Built with ☕ and Spring Boot
+For more details, refer to the codebase and configuration files.
