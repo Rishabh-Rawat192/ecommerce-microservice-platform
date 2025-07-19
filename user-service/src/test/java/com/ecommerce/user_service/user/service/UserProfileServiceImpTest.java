@@ -93,7 +93,7 @@ public class UserProfileServiceImpTest {
         // Act + Assert
         ApiException exception = assertThrows(ApiException.class, () -> userProfileService.register(request, userId));
         assertEquals("User profile already exists.", exception.getMessage());
-        assertEquals(409, exception.getHttpStatus().value()); // Conflict
+        assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus()); // Conflict
     }
 
     @Test
@@ -110,7 +110,7 @@ public class UserProfileServiceImpTest {
         // Act + Assert
         ApiException exception = assertThrows(ApiException.class, () -> userProfileService.register(request, userId));
         assertEquals("User not found", exception.getMessage());
-        assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus()); // Unauthorized
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getHttpStatus()); // Unauthorized
     }
 
     @Test

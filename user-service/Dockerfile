@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package
 
 # Use a smaller base image for the runtime
 FROM openjdk:17-jdk-slim

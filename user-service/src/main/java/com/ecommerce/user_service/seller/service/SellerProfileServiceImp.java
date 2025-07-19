@@ -52,18 +52,20 @@ public class SellerProfileServiceImp implements SellerProfileService {
                 .isEnabled(true)
                 .build();
 
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            logger.info("Transaction committed successfully. Sending seller status update.");
+                            sellerStatusProducerService.sendSellerStatusUpdate(user.getId(), true);
+                        }
+                    }
+            );
+        }
+
         sellerProfileRepository.save(sellerProfile);
         userRepository.save(user);
-
-        TransactionSynchronizationManager.registerSynchronization(
-                new TransactionSynchronization() {
-                    @Override
-                    public void afterCommit() {
-                        logger.info("Transaction committed successfully. Sending seller status update.");
-                        sellerStatusProducerService.sendSellerStatusUpdate(user.getId(), true);
-                    }
-                }
-        );
 
         return new SellerProfileRegisterResponse(user.getId());
     }
